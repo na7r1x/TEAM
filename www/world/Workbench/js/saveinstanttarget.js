@@ -274,6 +274,8 @@ var World = {
     },
 
     saveCurrentInstantTarget: function saveCurrentInstantTargetFn() {
+        let name = prompt('Target name:');
+
         var augmentations = [];
 
         allCurrentModels.forEach(function(model) {
@@ -287,18 +289,20 @@ var World = {
 
         if (this.tracker.state === AR.InstantTrackerState.TRACKING) {
             AR.platform.sendJSONObject({
-                action: "save_current_instant_target",
+                action: "save_instant_target",
+                // action: "save_current_instant_target",
+                name: name,
                 augmentations: JSON.stringify(augmentations)
             });
         } else {
-            alert("Save instant target is only available while tracking.")
+            alert("Save instant target ["+name+"] is only available while tracking.")
         }
     },
 
     /* Called from platform specific part of the sample. */
     saveCurrentInstantTargetToUrl: function saveCurrentInstantTargetToUrlFn(url) {
         this.tracker.saveCurrentInstantTarget(url, function() {
-            alert("Saving was successful");
+            alert("Saving target was successful");
         }, function(error) {
             alert("Saving failed: " + error);
         })

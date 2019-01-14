@@ -144,6 +144,15 @@ var app = {
                     }, app.saveError);
                 }, app.saveError);
                 app.wikitudePlugin.callJavaScript("World.saveCurrentInstantTargetToUrl(\"" + cordova.file.dataDirectory + "SavedInstantTarget.wto" + "\");")
+            } else if (jsonObject.action === "save_instant_target") {
+                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
+                    fileSystem.root.getFile(jsonObject.name + ".json", {create: true, exclusive: false}, function(fileEntry){
+                        fileEntry.createWriter(function(writer){
+                            writer.write(jsonObject.augmentations);
+                        }, app.saveError);
+                    }, app.saveError);
+                }, app.saveError);
+                app.wikitudePlugin.callJavaScript("World.saveCurrentInstantTargetToUrl(\"" + cordova.file.dataDirectory + jsonObject.name + ".wto" + "\");")
             } else if (jsonObject.action === "load_existing_instant_target") {
                 window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
                     fileSystem.root.getFile("SavedAugmentations.json", null, function(fileEntry){
@@ -157,6 +166,34 @@ var app = {
                         }, app.loadError);
                     }, app.loadError);
                 }, app.loadError);
+            } else if (jsonObject.action === "load_instant_target") {
+                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
+                    fileSystem.root.getFile(jsonObject.name + ".json", null, function(fileEntry){
+                        fileEntry.file(function(file){
+                            var reader = new FileReader();
+                            reader.onloadend = function(evt) {
+                                var augmentations = evt.target.result;
+                                app.wikitudePlugin.callJavaScript("World.loadExistingInstantTargetFromUrl(\"" + cordova.file.dataDirectory + jsonObject.name + ".wto" + "\"," + augmentations + ");");
+                            };
+                            reader.readAsText(file);
+                        }, app.loadError);
+                    }, app.loadError);
+                }, app.loadError);
+            } else if (jsonObject.action === "get_saved_models") {
+              // alert('received json')
+              window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
+                // var directoryEntry = fileSystem.root;
+                // directoryEntry.getDirectory("targets", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
+                var directoryReader = fileSystem.root.createReader();
+                directoryReader.readEntries(function(targets) {
+                  if (targets.length == 0)
+                      alert("No Records");
+                  else {
+                      // alert(targets);
+                      app.wikitudePlugin.callJavaScript("World.getTargets(" +JSON.stringify(targets)+ ");");
+                  }
+                }, app.loadError);
+              }, app.loadError);
             }
         }
     },
@@ -183,6 +220,51 @@ var app = {
                 "Build version: " + sdkVersion
             );
         });
+    },
+
+    getTargets: function getTargetsFn() {
+
+
+      function onFileSystemSuccess(fileSystem) {
+        // var directoryEntry = fileSystem.root;
+        // directoryEntry.getDirectory("targets", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
+        onDirectorySuccess(fileSystem.root);
+      }
+
+      function onDirectorySuccess(parent) {
+        var directoryReader = parent.createReader();
+        directoryReader.readEntries(success, fail);
+      }
+
+      function fail(error) {
+        alert("Failed to list directory contents: " + error.code);
+      }
+
+      function success(entries) {
+        if (entries.length == 0)
+            alert("No Records");
+        else
+        {
+            for (var i = 0; i < entries.length; i++) {
+                entries[i].file(function (file) {
+                    console.log("file.name " + file.name);
+                    // $('#targets').append("<li><a href=''>"+file.name+"</a></li>").listview('refresh');
+                    $('#targets').append("<li>"+file.name+"</li>").listview('refresh');
+                })
+            }
+        }
+        // alert('file list created');
+      }
+
+      function onDirectoryFail(error) {
+        alert("Unable to create new directory: " + error.code);
+      }
+
+      function onFileSystemFail(evt) {
+        alert(evt.target.error.code);
+      }
+
+      window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFileSystemSuccess, onFileSystemFail);
     }
     // --- End Wikitude Plugin ---
 };
