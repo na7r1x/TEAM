@@ -75,7 +75,6 @@ var World = {
                     });
 
                     document.getElementById("tracking-start-stop-button").src = "assets/buttons/stop.png";
-                    document.getElementById("tracking-angle-slider-container").style.visibility = "hidden";
                 }
             },
             /*
