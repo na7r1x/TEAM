@@ -68,13 +68,14 @@ var World = {
 
                     document.getElementById("tracking-start-stop-button").src = "assets/buttons/start.png";
                     document.getElementById("tracking-height-slider-container").style.visibility = "visible";
+                    document.getElementById("tracking-angle-slider-container").style.visibility = "visible";
                 } else {
                     els.forEach(function(element) {
                         element.classList.remove("image-button-inactive");
                     });
 
                     document.getElementById("tracking-start-stop-button").src = "assets/buttons/stop.png";
-                    document.getElementById("tracking-height-slider-container").style.visibility = "hidden";
+                    document.getElementById("tracking-angle-slider-container").style.visibility = "hidden";
                 }
             },
             /*
