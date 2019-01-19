@@ -179,6 +179,8 @@ var app = {
                         }, app.loadError);
                     }, app.loadError);
                 }, app.loadError);
+            } else if (jsonObject.action === "delete_instant_target") {
+                app.deleteTracker(jsonObject.name);
             } else if (jsonObject.action === "get_saved_models") {
               // alert('received json')
               window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
@@ -205,6 +207,7 @@ var app = {
     },
     onBackButton: function() {
         /* Android back button was pressed and the Wikitude PhoneGap Plugin is now closed */
+        window.location.reload(true);
     },
     showBuildInformation: function() {
         var sdkVersion = ""
@@ -220,6 +223,18 @@ var app = {
                 "Build version: " + sdkVersion
             );
         });
+    },
+
+    deleteTracker: function(tracker) {
+      if (confirm('Delete ['+tracker+']. Are you sure?')) {
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
+          fileSystem.root.getFile(tracker, null, function(fileEntry){
+            fileEntry.remove(function(file){
+              alert("File removed successfully!");
+            }, app.loadError);
+          }, app.loadError);
+        }, app.loadError);
+      }
     },
 
     getTargets: function getTargetsFn() {
@@ -249,7 +264,7 @@ var app = {
                 entries[i].file(function (file) {
                     console.log("file.name " + file.name);
                     // $('#targets').append("<li><a href=''>"+file.name+"</a></li>").listview('refresh');
-                    $('#targets').append("<li>"+file.name+"</li>").listview('refresh');
+                    $('#targets').append("<li><a href='#'>"+file.name+"</a><a href='#' id='"+file.name+"' onclick='app.deleteTracker(id)'>Delete</a></li>").listview('refresh');
                 })
             }
         }
