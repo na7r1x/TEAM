@@ -14,6 +14,9 @@ AR.context.on2FingerGestureStarted = function() {
 var World = {
 
     drawables: [],
+    drawablesArrays: [],
+    trackers: [],
+    trackables: [],
 
     init: function initFn() {
         var message = "Running without platform assisted tracking (ARKit or ARCore).";
@@ -28,7 +31,6 @@ var World = {
     createOverlays: function createOverlaysFn() {
         var crossHairsBlueImage = new AR.ImageResource("assets/crosshairs_blue.png");
         this.crossHairsBlueDrawable = new AR.ImageDrawable(crossHairsBlueImage, 1.0);
-
         this.tracker = new AR.InstantTracker({
             /*
                 Device height needs to be as accurate as possible to have an accurate scale returned by the Wikitude
@@ -68,19 +70,80 @@ var World = {
     },
 
     loadExistingInstantTargets: function loadExistingInstantTargetFn() {
-        World.instantTrackable.drawables.removeCamDrawable(World.drawables);
-        World.drawables.forEach(function(drawable) {
-            drawable.destroy();
+      // reset
+        $(this.trackables).each(function(index, el) {
+          el.drawables.removeCamDrawable(World.drawablesArrays[index]);
         });
-        World.drawables = [];
+        // World.instantTrackable.drawables.removeCamDrawable(World.drawables);
+        World.drawablesArrays.forEach(function(drawableArray) {
+          drawableArray.forEach(function(drawable) {
+            drawable.destroy();
+          });
+        });
+        $(this.trackers).each(function(index, el) {
+          el.destroy();
+        });
+        this.trackers = [];
         $('input:checkbox:checked').each(function(index, el) {
           var name = $(el).attr('id');
           name = name.split('.');
           AR.platform.sendJSONObject({
-            action: "load_instant_target",
+            action: "load_instant_targets",
             name: name[0]
           });
         });
+    },
+
+    /* Called from platform specific part */
+    loadExistingInstantTargetsFromUrl: function loadExistingInstantTargetFromUrlFn(url, augmentations) {
+        var thisTracker = World.trackers.push(new AR.InstantTracker({
+            /*
+                Device height needs to be as accurate as possible to have an accurate scale returned by the Wikitude
+                SDK.
+             */
+            deviceHeight: 1.0,
+            onError: World.onError,
+            smartEnabled: false
+        }));
+        console.log("this Tracker: " + thisTracker);
+        var thisTrackable = World.trackables.push(new AR.InstantTrackable(World.trackers[thisTracker-1], {
+            drawables: {
+                cam: World.crossHairsBlueDrawable
+            },
+            onTrackingStarted: function onTrackingStartedFn() {
+                /* Do something when tracking is started (recognized). */
+            },
+            onTrackingStopped: function onTrackingStoppedFn() {
+                /* Do something when tracking is stopped (lost). */
+            },
+            onError: World.onError
+        }));
+        var thisDrawables = this.drawablesArrays.push([]);
+        var mapResource = new AR.TargetCollectionResource(url);
+        World.trackers[thisTracker-1].loadExistingInstantTarget(mapResource, function() {
+            augmentations.forEach(function(model) {
+                if (model.type === '3d') {
+                  World.drawablesArrays[thisDrawables-1].push(new AR.Model(model.uri, {
+                    translate: model.translate,
+                    rotate: model.rotate,
+                    scale: model.scale,
+                    onError: World.onError
+                  }));
+                } else if (model.type === 'label') {
+                  model.label.height = 0.1;
+                  World.drawablesArrays[thisDrawables-1].push(new AR.Label(model.label.text, model.label.height, model.label));
+                }
+            });
+            World.trackables[thisTrackable-1].drawables.addCamDrawable(World.drawablesArrays[thisDrawables-1]);
+            alert("Loading was successful");
+            console.log(World.trackers);
+            console.log(World.trackables);
+            console.log(World.drawablesArrays);
+        }, function(error) {
+            alert("Loading failed: " + error);
+        }, {
+            expansionPolicy: AR.CONST.INSTANT_TARGET_EXPANSION_POLICY.ALLOW_EXPANSION
+        })
     },
 
     /* Called from platform specific part */
@@ -88,11 +151,11 @@ var World = {
         var mapResource = new AR.TargetCollectionResource(url);
         this.tracker.loadExistingInstantTarget(mapResource, function() {
 
-            // World.instantTrackable.drawables.removeCamDrawable(World.drawables);
-            // World.drawables.forEach(function(drawable) {
-            //     drawable.destroy();
-            // });
-            // World.drawables = [];
+            World.instantTrackable.drawables.removeCamDrawable(World.drawables);
+            World.drawables.forEach(function(drawable) {
+                drawable.destroy();
+            });
+            World.drawables = [];
 
             augmentations.forEach(function(model) {
                 if (model.type === '3d') {

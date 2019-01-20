@@ -179,6 +179,19 @@ var app = {
                         }, app.loadError);
                     }, app.loadError);
                 }, app.loadError);
+            } else if (jsonObject.action === "load_instant_targets") {
+                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
+                    fileSystem.root.getFile(jsonObject.name + ".json", null, function(fileEntry){
+                        fileEntry.file(function(file){
+                            var reader = new FileReader();
+                            reader.onloadend = function(evt) {
+                                var augmentations = evt.target.result;
+                                app.wikitudePlugin.callJavaScript("World.loadExistingInstantTargetsFromUrl(\"" + cordova.file.dataDirectory + jsonObject.name + ".wto" + "\"," + augmentations + ");");
+                            };
+                            reader.readAsText(file);
+                        }, app.loadError);
+                    }, app.loadError);
+                }, app.loadError);
             } else if (jsonObject.action === "delete_instant_target") {
                 app.deleteTracker(jsonObject.name);
             } else if (jsonObject.action === "get_saved_models") {
