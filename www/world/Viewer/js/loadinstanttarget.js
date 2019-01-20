@@ -67,16 +67,32 @@ var World = {
         });
     },
 
+    loadExistingInstantTargets: function loadExistingInstantTargetFn() {
+        World.instantTrackable.drawables.removeCamDrawable(World.drawables);
+        World.drawables.forEach(function(drawable) {
+            drawable.destroy();
+        });
+        World.drawables = [];
+        $('input:checkbox:checked').each(function(index, el) {
+          var name = $(el).attr('id');
+          name = name.split('.');
+          AR.platform.sendJSONObject({
+            action: "load_instant_target",
+            name: name[0]
+          });
+        });
+    },
+
     /* Called from platform specific part */
     loadExistingInstantTargetFromUrl: function loadExistingInstantTargetFromUrlFn(url, augmentations) {
         var mapResource = new AR.TargetCollectionResource(url);
         this.tracker.loadExistingInstantTarget(mapResource, function() {
 
-            World.instantTrackable.drawables.removeCamDrawable(World.drawables);
-            World.drawables.forEach(function(drawable) {
-                drawable.destroy();
-            });
-            World.drawables = [];
+            // World.instantTrackable.drawables.removeCamDrawable(World.drawables);
+            // World.drawables.forEach(function(drawable) {
+            //     drawable.destroy();
+            // });
+            // World.drawables = [];
 
             augmentations.forEach(function(model) {
                 if (model.type === '3d') {
@@ -117,12 +133,12 @@ var World = {
 
       } else {
         for (var i = 0; i < data.length; i++) {
-          // data[i].file(function (file) {
           console.log("file.name " + data[i].name);
-          // $('#targets').append("<li><a href=''>"+data.name+"</a></li>").listview('refresh');
-          $('#select').append("<option value='"+data[i].name+"'>"+data[i].name+"</li>").selectmenu('refresh');
-          // })
+          // $('#select').append("<option value='"+data[i].name+"'>"+data[i].name+"</li>").selectmenu('refresh');
+          $('#select').append("<input type='checkbox' id='"+data[i].name+"'><label for='"+data[i].name+"'>"+data[i].name+"</label>");
         }
+        $('input[type=checkbox]').checkboxradio().trigger('create');
+        $('a.ui-btn').button().trigger('create');
       }
     }
 };
