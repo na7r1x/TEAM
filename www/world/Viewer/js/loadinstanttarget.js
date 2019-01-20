@@ -77,51 +77,19 @@ var World = {
                 drawable.destroy();
             });
             World.drawables = [];
+
             augmentations.forEach(function(model) {
-                var modelIndex = rotationValues.length;
-
-                rotationValues[modelIndex] = model.rotate.z;
-                scaleValues[modelIndex] = model.scale.x;
-
-                World.drawables.push(new AR.Model(model.uri, {
+                if (model.type === '3d') {
+                  World.drawables.push(new AR.Model(model.uri, {
                     translate: model.translate,
                     rotate: model.rotate,
                     scale: model.scale,
-                    onDragBegan: function() {
-                        oneFingerGestureAllowed = true;
-                    },
-                    onDragChanged: function(relativeX, relativeY, intersectionX, intersectionY) {
-                        if (oneFingerGestureAllowed) {
-                            /*
-                                We recommend setting the entire translate property rather than its individual components
-                                as the latter would cause several call to native, which can potentially lead to
-                                performance issues on older devices. The same applied to the rotate and scale property.
-                            */
-                            this.translate = {
-                                x: intersectionX,
-                                y: intersectionY
-                            };
-                        }
-                    },
-                    onRotationChanged: function(angleInDegrees) {
-                        this.rotate.z = rotationValues[modelIndex] - angleInDegrees;
-                    },
-                    onRotationEnded: function() {
-                        rotationValues[modelIndex] = this.rotate.z
-                    },
-                    onScaleChanged: function(scale) {
-                        var scaleValue = scaleValues[modelIndex] * scale;
-                        this.scale = {
-                            x: scaleValue,
-                            y: scaleValue,
-                            z: scaleValue
-                        };
-                    },
-                    onScaleEnded: function() {
-                        scaleValues[modelIndex] = this.scale.x;
-                    },
                     onError: World.onError
-                }))
+                  }));
+                } else if (model.type === 'label') {
+                  model.label.height = 0.1;
+                  World.drawables.push(new AR.Label(model.label.text, model.label.height, model.label));
+                }
             });
             World.instantTrackable.drawables.addCamDrawable(World.drawables);
             alert("Loading was successful");
