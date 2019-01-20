@@ -16,7 +16,16 @@ body {
     width: 85%;
 }
 
-#tracking-controls-container-lower {
+#tracking-controls-container-lower-1 {
+    position: absolute;
+    right: 0;
+    bottom: 60px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+#tracking-controls-container-lower-2 {
     position: absolute;
     right: 0;
     bottom: 0;
