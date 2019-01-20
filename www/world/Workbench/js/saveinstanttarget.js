@@ -5,6 +5,7 @@ var rotationValues = [];
 var scaleValues = [];
 
 var allCurrentModels = [];
+var allCurrentLabels = [];
 
 var oneFingerGestureAllowed = false;
 
@@ -58,6 +59,7 @@ var World = {
         });
         this.crossHairsGreenDrawable = new AR.ImageDrawable(crossHairsGreenImage, 1.0);
 
+
         this.tracker = new AR.InstantTracker({
             onChangedState: function onChangedStateFn(state) {
                 var els = [].slice.apply(document.getElementsByClassName("model-button"));
@@ -75,6 +77,8 @@ var World = {
                     });
 
                     document.getElementById("tracking-start-stop-button").src = "assets/buttons/stop.png";
+                    document.getElementById("tracking-height-slider-container").style.visibility = "hidden";
+                    document.getElementById("tracking-angle-slider-container").style.visibility = "hidden";
                 }
             },
             /*
@@ -85,7 +89,7 @@ var World = {
             onError: World.onError,
             onChangeStateError: World.onError,
             /* SMART has to be disabled to use the save and load InstantTarget feature. */
-            trackingPlaneOrientation: 45.0,
+            trackingPlaneOrientation: 0,
             smartEnabled: false
         });
 
@@ -147,13 +151,22 @@ var World = {
         document.getElementById("tracking-model-button-trainer").addEventListener('touchstart', function( /*ev*/ ) {
             World.requestedModel = 4;
         }, false);
+        document.getElementById("tracking-model-button-label").addEventListener('touchstart', function( /*ev*/ ) {
+            World.requestedModel = 5;
+        }, false);
     },
 
     updatePlaneDrag: function updatePlaneDragFn(xPos, yPos) {
         if (World.requestedModel >= 0) {
+          if (World.requestedModel === 5) {
+            World.addLabel("test", xPos, yPos);
+            World.requestedModel = -1;
+            World.initialDrag = true;
+          } else {
             World.addModel(World.requestedModel, xPos, yPos);
             World.requestedModel = -1;
             World.initialDrag = true;
+          }
         }
 
         if (World.initialDrag && oneFingerGestureAllowed) {
@@ -252,6 +265,78 @@ var World = {
         }
     },
 
+    addLabel: function addLabelFn(text, xpos, ypos) {
+        if (World.isTracking()) {
+            var labelIndex = rotationValues.length;
+            World.addModelValues();
+
+            var label = new AR.Label(prompt('Text:'), 0.1, {
+                offsetY : 1,
+                // onClick : function() {
+                //   label.text += "CLICK "
+                // },
+                rotate: {
+                  tilt: -90
+                },
+                style: {
+                  backgroundColor: '#cccccc'
+                },
+                /*
+                    We recommend only implementing the callbacks actually needed as they will cause calls from
+                    native to JavaScript being invoked. Especially for the frequently called changed callbacks this
+                    should be avoided. In this sample all callbacks are implemented simply for demonstrative purposes.
+                */
+                onDragBegan: function( /*x, y*/ ) {
+                    oneFingerGestureAllowed = true;
+                },
+                onDragChanged: function(relativeX, relativeY, intersectionX, intersectionY) {
+                    if (oneFingerGestureAllowed) {
+                        /*
+                            We recommend setting the entire translate property rather than its individual components
+                            as the latter would cause several call to native, which can potentially lead to performance
+                            issues on older devices. The same applied to the rotate and scale property.
+                        */
+                        this.translate = {
+                            x: intersectionX,
+                            y: intersectionY
+                        };
+                    }
+                },
+                onDragEnded: function(x, y) {
+                    /* React to the drag gesture ending. */
+                },
+                onRotationBegan: function(angleInDegrees) {
+                    /* React to the rotation gesture beginning. */
+                },
+                onRotationChanged: function(angleInDegrees) {
+                    this.rotate.z = rotationValues[labelIndex] - angleInDegrees;
+                },
+                onRotationEnded: function( /*angleInDegrees*/ ) {
+                    rotationValues[labelIndex] = this.rotate.z
+                },
+                onScaleBegan: function(scale) {
+                    /* React to the scale gesture beginning. */
+                },
+                onScaleChanged: function(scale) {
+                    var scaleValue = scaleValues[labelIndex] * scale;
+                    this.scale = {
+                        x: scaleValue,
+                        y: scaleValue,
+                        z: scaleValue
+                    };
+                },
+                onScaleEnded: function( /*scale*/ ) {
+                    scaleValues[labelIndex] = this.scale.x;
+                },
+                onError: World.onError
+            });
+
+            allCurrentLabels.push(label);
+            World.lastAddedModel = label;
+            this.instantTrackable.drawables.addCamDrawable(label);
+        }
+    },
+
     isTracking: function isTrackingFn() {
         return (this.tracker.state === AR.InstantTrackerState.TRACKING);
     },
@@ -263,8 +348,10 @@ var World = {
 
     resetModels: function resetModelsFn() {
         this.instantTrackable.drawables.removeCamDrawable(allCurrentModels);
+        this.instantTrackable.drawables.removeCamDrawable(allCurrentLabels);
 
         allCurrentModels = [];
+        allCurrentLabels = [];
         World.resetAllModelValues();
     },
 
@@ -280,10 +367,18 @@ var World = {
 
         allCurrentModels.forEach(function(model) {
             augmentations.push({
+                type: '3d',
                 uri: model.uri,
                 translate: model.translate,
                 rotate: model.rotate,
                 scale: model.scale
+            });
+        });
+
+        allCurrentLabels.forEach(function(label) {
+            augmentations.push({
+                type: 'label',
+                label: label
             });
         });
 
