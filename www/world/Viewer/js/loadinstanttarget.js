@@ -67,13 +67,13 @@ var World = {
         });
     },
 
-    loadExistingInstantTargets: function loadExistingInstantTargetFn() {
+    loadExistingInstantTargets: function loadExistingInstantTargetsFn() {
         World.instantTrackable.drawables.removeCamDrawable(World.drawables);
         World.drawables.forEach(function(drawable) {
             drawable.destroy();
         });
         World.drawables = [];
-        $('input:checkbox:checked').each(function(index, el) {
+        $('input:radio:checked').each(function(index, el) {
           var name = $(el).attr('id');
           name = name.split('.');
           AR.platform.sendJSONObject({
@@ -88,11 +88,11 @@ var World = {
         var mapResource = new AR.TargetCollectionResource(url);
         this.tracker.loadExistingInstantTarget(mapResource, function() {
 
-            // World.instantTrackable.drawables.removeCamDrawable(World.drawables);
-            // World.drawables.forEach(function(drawable) {
-            //     drawable.destroy();
-            // });
-            // World.drawables = [];
+            World.instantTrackable.drawables.removeCamDrawable(World.drawables);
+            World.drawables.forEach(function(drawable) {
+                drawable.destroy();
+            });
+            World.drawables = [];
 
             augmentations.forEach(function(model) {
                 if (model.type === '3d') {
@@ -105,6 +105,19 @@ var World = {
                 } else if (model.type === 'label') {
                   model.label.height = 0.1;
                   World.drawables.push(new AR.Label(model.label.text, model.label.height, model.label));
+                } else if (model.type === 'link') {
+									model.link.height = 0.1;
+									console.log(model);
+									newDrawable = new AR.Label(model.link.text, model.link.height, {
+										translate: model.link.translate,
+										rotate: model.link.rotate,
+										scale: model.link.scale,
+										style: model.link.style,
+										onClick: function() {
+											AR.context.openInBrowser('http://google.com');
+										}
+									});
+									World.drawables.push(newDrawable);
                 }
             });
             World.instantTrackable.drawables.addCamDrawable(World.drawables);
@@ -134,11 +147,12 @@ var World = {
       } else {
         for (var i = 0; i < data.length; i++) {
           console.log("file.name " + data[i].name);
-          // $('#select').append("<option value='"+data[i].name+"'>"+data[i].name+"</li>").selectmenu('refresh');
-          $('#select').append("<input type='checkbox' id='"+data[i].name+"'><label for='"+data[i].name+"'>"+data[i].name+"</label>");
-        }
-        $('input[type=checkbox]').checkboxradio().trigger('create');
-        $('a.ui-btn').button().trigger('create');
+          $('#select').append("<option value='"+data[i].name+"'>"+data[i].name+"</li>").selectmenu('refresh');
+            // $('#select').append("<input type='radio' name='load' id='" + data[i].name + "' value='" + data[i].name +"'><label for='"+data[i].name+"'>"+data[i].name+"</label>");
+				}
+				$('#select').trigger('change');
+        // $('input[type=radio]').checkboxradio().trigger('create');
+        // $('a.ui-btn').button().trigger('create');
       }
     }
 };
