@@ -6,7 +6,8 @@ var scaleValues = [];
 
 var allCurrentModels = [];
 var allCurrentLabels = [];
-var allCurrentLinks= [];
+var allCurrentLinks = [];
+var allCurrentVideos= [];
 
 var oneFingerGestureAllowed = false;
 
@@ -157,7 +158,10 @@ var World = {
         }, false);
         document.getElementById("tracking-model-button-link").addEventListener('touchstart', function ( /*ev*/) {
             World.requestedModel = 6;
-        }, false);
+				}, false);
+				document.getElementById("tracking-model-button-video").addEventListener('touchstart', function ( /*ev*/) {
+					World.requestedModel = 7;
+				}, false);
     },
 
     updatePlaneDrag: function updatePlaneDragFn(xPos, yPos) {
@@ -168,6 +172,10 @@ var World = {
             World.initialDrag = true;
 					} else if (World.requestedModel === 6) {
 						World.addLink("default", xPos, yPos);
+						World.requestedModel = -1;
+						World.initialDrag = true;
+					} else if (World.requestedModel === 7) {
+						World.addVideo("default", xPos, yPos);
 						World.requestedModel = -1;
 						World.initialDrag = true;
 					} else {
@@ -425,6 +433,92 @@ var World = {
 			}
 		},
 
+	getVideo: function getVideoFn(videoname) {
+		AR.platform.sendJSONObject({
+			action: "get_video_absolute_path",
+			name: 'gaurelchito-1548623706.mp4'
+		});
+	},
+
+	addVideo: function addVideoFn(path, xpos, ypos) {
+		if (World.isTracking()) {
+			var labelIndex = rotationValues.length;
+			World.addModelValues();
+
+			var video = new AR.VideoDrawable('assets/test.mp4', 0.5, {
+				offsetY: 1,
+				// onClick: function (l) {
+				// 	l.play();
+				// },
+				rotate: {
+					tilt: -90
+				},
+				style: {
+					backgroundColor: '#cccccc'
+				},
+				/*
+						We recommend only implementing the callbacks actually needed as they will cause calls from
+						native to JavaScript being invoked. Especially for the frequently called changed callbacks this
+						should be avoided. In this sample all callbacks are implemented simply for demonstrative purposes.
+				*/
+				onDragBegan: function ( /*x, y*/) {
+					oneFingerGestureAllowed = true;
+				},
+				onDragChanged: function (relativeX, relativeY, intersectionX, intersectionY) {
+					if (oneFingerGestureAllowed) {
+						/*
+								We recommend setting the entire translate property rather than its individual components
+								as the latter would cause several call to native, which can potentially lead to performance
+								issues on older devices. The same applied to the rotate and scale property.
+						*/
+						this.translate = {
+							x: intersectionX,
+							y: intersectionY
+						};
+					}
+				},
+				onDragEnded: function (x, y) {
+					/* React to the drag gesture ending. */
+				},
+				onRotationBegan: function (angleInDegrees) {
+					/* React to the rotation gesture beginning. */
+				},
+				onRotationChanged: function (angleInDegrees) {
+					this.rotate.z = rotationValues[labelIndex] - angleInDegrees;
+				},
+				onRotationEnded: function ( /*angleInDegrees*/) {
+					rotationValues[labelIndex] = this.rotate.z
+				},
+				onScaleBegan: function (scale) {
+					/* React to the scale gesture beginning. */
+				},
+				onScaleChanged: function (scale) {
+					var scaleValue = scaleValues[labelIndex] * scale;
+					this.scale = {
+						x: scaleValue,
+						y: scaleValue,
+						z: scaleValue
+					};
+				},
+				onScaleEnded: function ( /*scale*/) {
+					scaleValues[labelIndex] = this.scale.x;
+				},
+				onError: World.onError
+			});
+
+			video.onClick = function() {
+				video.play();
+			};
+
+			allCurrentVideos.push(video);
+			World.lastAddedModel = video;
+			this.instantTrackable.drawables.addCamDrawable(video);
+
+			console.log(video);
+
+		}
+	},
+
     isTracking: function isTrackingFn() {
         return (this.tracker.state === AR.InstantTrackerState.TRACKING);
     },
@@ -437,11 +531,13 @@ var World = {
     resetModels: function resetModelsFn() {
         this.instantTrackable.drawables.removeCamDrawable(allCurrentModels);
         this.instantTrackable.drawables.removeCamDrawable(allCurrentLabels);
-        this.instantTrackable.drawables.removeCamDrawable(allCurrentLinks);
+				this.instantTrackable.drawables.removeCamDrawable(allCurrentLinks);
+        this.instantTrackable.drawables.removeCamDrawable(allCurrentVideos);
 
         allCurrentModels = [];
         allCurrentLabels = [];
-        allCurrentLinks = [];
+				allCurrentLinks = [];
+        allCurrentVideos = [];
         World.resetAllModelValues();
     },
 
@@ -477,7 +573,14 @@ var World = {
                 type: 'link',
                 link: link
             });
-        });
+				});
+				
+				allCurrentVideos.forEach(function (video) {
+					augmentations.push({
+						type: 'video',
+						video: video
+					});
+				});
 
         if (this.tracker.state === AR.InstantTrackerState.TRACKING) {
             AR.platform.sendJSONObject({
@@ -493,6 +596,7 @@ var World = {
 
     /* Called from platform specific part of the sample. */
     saveCurrentInstantTargetToUrl: function saveCurrentInstantTargetToUrlFn(url) {
+				console.log(url);
         this.tracker.saveCurrentInstantTarget(url, function() {
             alert("Saving target was successful");
         }, function(error) {

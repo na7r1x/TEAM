@@ -136,8 +136,8 @@ var app = {
                 var alertMessage = "Poi '" + jsonObject.id + "' selected\nTitle: " + jsonObject.title + "\nDescription: " + jsonObject.description;
                 alert(alertMessage);
             } else if (jsonObject.action === "save_current_instant_target") {
-                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
-                    fileSystem.root.getFile("SavedAugmentations.json", {create: true, exclusive: false}, function(fileEntry){
+                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function(fileSystem){
+                    fileSystem.getFile("SavedAugmentations.json", {create: true, exclusive: false}, function(fileEntry){
                         fileEntry.createWriter(function(writer){
                             writer.write(jsonObject.augmentations);
                         }, app.saveError);
@@ -145,17 +145,19 @@ var app = {
                 }, app.saveError);
                 app.wikitudePlugin.callJavaScript("World.saveCurrentInstantTargetToUrl(\"" + cordova.file.dataDirectory + "SavedInstantTarget.wto" + "\");")
             } else if (jsonObject.action === "save_instant_target") {
-                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
-                    fileSystem.root.getFile(jsonObject.name + ".json", {create: true, exclusive: false}, function(fileEntry){
-                        fileEntry.createWriter(function(writer){
-                            writer.write(jsonObject.augmentations);
-                        }, app.saveError);
-                    }, app.saveError);
+                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function(fileSystem){
+										fileSystem.getDirectory('augmentations/', {create: true, exclusive: false}, function(dirEntry) {
+											dirEntry.getFile(jsonObject.name + ".json", {create: true, exclusive: false}, function(fileEntry){
+													fileEntry.createWriter(function(writer){
+															writer.write(jsonObject.augmentations);
+													}, app.saveError);
+											}, app.saveError);
+										}, app.saveError);
                 }, app.saveError);
-                app.wikitudePlugin.callJavaScript("World.saveCurrentInstantTargetToUrl(\"" + cordova.file.dataDirectory + jsonObject.name + ".wto" + "\");")
+                app.wikitudePlugin.callJavaScript("World.saveCurrentInstantTargetToUrl(\"" + cordova.file.externalDataDirectory + 'targets/' + jsonObject.name + ".wto" + "\");")
             } else if (jsonObject.action === "load_existing_instant_target") {
-                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
-                    fileSystem.root.getFile("SavedAugmentations.json", null, function(fileEntry){
+                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function(fileSystem){
+                    fileSystem.getFile("SavedAugmentations.json", null, function(fileEntry){
                         fileEntry.file(function(file){
                             var reader = new FileReader();
                             reader.onloadend = function(evt) {
@@ -167,34 +169,39 @@ var app = {
                     }, app.loadError);
                 }, app.loadError);
             } else if (jsonObject.action === "load_instant_target") {
-                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
-                    fileSystem.root.getFile(jsonObject.name + ".json", null, function(fileEntry){
+                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + 'augmentations/', function(fileSystem){
+                    fileSystem.getFile(jsonObject.name + ".json", null, function(fileEntry){
                         fileEntry.file(function(file){
                             var reader = new FileReader();
                             reader.onloadend = function(evt) {
                                 var augmentations = evt.target.result;
-                                app.wikitudePlugin.callJavaScript("World.loadExistingInstantTargetFromUrl(\"" + cordova.file.dataDirectory + jsonObject.name + ".wto" + "\"," + augmentations + ");");
+                                app.wikitudePlugin.callJavaScript("World.loadExistingInstantTargetFromUrl(\"" + cordova.file.externalDataDirectory + 'targets/' + jsonObject.name + ".wto" + "\"," + augmentations + ");");
                             };
                             reader.readAsText(file);
                         }, app.loadError);
                     }, app.loadError);
                 }, app.loadError);
             } else if (jsonObject.action === "delete_instant_target") {
-                app.deleteTracker(jsonObject.name);
-            } else if (jsonObject.action === "get_saved_models") {
+								app.deleteTracker(jsonObject.name);
+						} else if (jsonObject.action === "get_video_absolute_path") {
+							app.wikitudePlugin.callJavaScript("World.addVideo("+cordova.file.externalDataDirectory+"videos/"+jsonObject.name+");");
+						} else if (jsonObject.action === "get_saved_models") {
               // alert('received json')
-              window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
-                // var directoryEntry = fileSystem.root;
-                // directoryEntry.getDirectory("targets", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
-                var directoryReader = fileSystem.root.createReader();
-                directoryReader.readEntries(function(targets) {
-                  if (targets.length == 0)
-                      alert("No Records");
-                  else {
-                      // alert(targets);
-                      app.wikitudePlugin.callJavaScript("World.getTargets(" +JSON.stringify(targets)+ ");");
-                  }
-                }, app.loadError);
+              window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function(fileSystem) {
+                // var directoryEntry = fileSystem;
+								// directoryEntry.getDirectory("targets", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
+								fileSystem.getDirectory('targets', {create: true, exclusive: false}, function(dir) {
+									var directoryReader = dir.createReader();
+									directoryReader.readEntries(function(targets) {
+										if (targets.length == 0)
+												alert("No Records");
+										else {
+												// alert(targets);
+												console.log(targets);
+												app.wikitudePlugin.callJavaScript("World.getTargets(" +JSON.stringify(targets)+ ");");
+										}
+									}, app.loadError);
+								}, app.loadError);
               }, app.loadError);
             }
         }
@@ -204,7 +211,15 @@ var app = {
     },
     loadError: function(error) {
         alert("Could not load instant target, please save it first.");
-    },
+		},
+		deleteError: function(code) {
+			if (code===1) {
+				alert('Deleting WTO file failed.');
+			} else if (code===2) {
+				alert('Deleting augmentations file failed.');
+			}
+			alert('Deletion failed');
+		},
     onBackButton: function() {
         /* Android back button was pressed and the Wikitude PhoneGap Plugin is now closed */
         window.location.reload(true);
@@ -226,24 +241,44 @@ var app = {
     },
 
     deleteTracker: function(tracker) {
+			tracker = tracker.split('.')[0];
       if (confirm('Delete ['+tracker+']. Are you sure?')) {
-        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
-          fileSystem.root.getFile(tracker, null, function(fileEntry){
+        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + 'targets/', function(fileSystem){
+          fileSystem.getFile(tracker+'.wto', null, function(fileEntry){
             fileEntry.remove(function(file){
-              alert("File removed successfully!");
-            }, app.loadError);
-          }, app.loadError);
-        }, app.loadError);
+              alert("WTO file removed successfully!");
+            }, app.deleteError);
+          }, app.deleteError);
+				}, app.deleteError);
+				window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + 'augmentations/', function (fileSystem) {
+					fileSystem.getFile(tracker+'.json', null, function (fileEntry) {
+						fileEntry.remove(function (file) {
+							alert("Augmentations file removed successfully!");
+						}, app.deleteError);
+					}, app.deleteError);
+				}, app.deleteError);
       }
-    },
+		},
+		
+	deleteVideo: function (video) {
+		if (confirm('Delete [' + video + ']. Are you sure?')) {
+			window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + 'videos/', function (fileSystem) {
+				fileSystem.getFile(video, null, function (fileEntry) {
+					fileEntry.remove(function (file) {
+						alert("Video file removed successfully!");
+					}, app.deleteError);
+				}, app.deleteError);
+			}, app.deleteError);
+		}
+	},
 
     getTargets: function getTargetsFn() {
 
 
       function onFileSystemSuccess(fileSystem) {
-        // var directoryEntry = fileSystem.root;
-        // directoryEntry.getDirectory("targets", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
-        onDirectorySuccess(fileSystem.root);
+        var directoryEntry = fileSystem;
+        directoryEntry.getDirectory("augmentations", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
+        // onDirectorySuccess(fileSystem);
       }
 
       function onDirectorySuccess(parent) {
@@ -257,7 +292,7 @@ var app = {
 
       function success(entries) {
         if (entries.length == 0)
-            alert("No Records");
+            alert("No targets.");
         else
         {
             for (var i = 0; i < entries.length; i++) {
@@ -279,8 +314,124 @@ var app = {
         alert(evt.target.error.code);
       }
 
-      window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFileSystemSuccess, onFileSystemFail);
-    }
+      window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, onFileSystemSuccess, onFileSystemFail);
+    },
+
+    captureVideo: function captureVideoFn() {
+			var errorCallback = function (e) {
+				console.log(e);
+			}
+
+			var successCallback = function() {
+				alert('File saved successfully!');
+			}
+
+			var moveFile = function (fileUri) {
+				window.resolveLocalFileSystemURL(
+					fileUri,
+					function (fileEntry) {
+						var newFileUri = cordova.file.externalDataDirectory;
+						var oldFileUri = fileUri;
+						var fileExt = "." + oldFileUri.split('.').pop();
+						var ts = Math.round((new Date()).getTime() / 1000);
+						var name = prompt('Video name:');
+						if (name) {
+							var newFileName = name + '-' + ts + fileExt;
+							window.resolveLocalFileSystemURL(newFileUri,
+								function(fs) {
+									fs.getDirectory('videos/', {create: true, exclusive: false},
+										function (dirEntry) {
+											fileEntry.moveTo(dirEntry, newFileName, successCallback, errorCallback('failed to move file'));
+										},
+										errorCallback('failed getting dir videos')
+									);
+								},
+								errorCallback('new path resolve failed')
+							);
+						} else {
+							errorCallback('undefined file name');
+						}
+					},
+					errorCallback('filesystem resolve failed')
+				);
+			}
+
+			// capture callback
+			var captureSuccess = function (mediaFiles) {
+				var i, path, len;
+				for (i = 0, len = mediaFiles.length; i < len; i += 1) {
+					path = mediaFiles[i].fullPath;
+					moveFile(path);
+				}
+				console.log(mediaFiles);
+			};
+
+			// capture error callback
+			var captureError = function (error) {
+				navigator.notification.alert('Error code: ' + error.code, null, 'Capture Error');
+			};
+
+			// start video capture
+			navigator.device.capture.captureVideo(captureSuccess, captureError, { limit: 1, quality: 0 });
+		},
+
+	playVideo: function playVideoFn(videoname) {
+		var path = cordova.file.externalDataDirectory + "videos/" + videoname;
+		var options = {
+			successCallback: function () {
+				console.log("Video was closed without error.");
+			},
+			errorCallback: function (errMsg) {
+				console.log("Error! " + errMsg);
+			}
+			// orientation: 'landscape'
+		};
+		window.plugins.streamingMedia.playVideo(path, options);
+	},
+		
+	getVideos: function getVideosFn() {
+
+
+		function onFileSystemSuccess(fileSystem) {
+			var directoryEntry = fileSystem;
+			directoryEntry.getDirectory("videos", { create: true, exclusive: false }, onDirectorySuccess, onDirectoryFail);
+			// onDirectorySuccess(fileSystem);
+		}
+
+		function onDirectorySuccess(parent) {
+			var directoryReader = parent.createReader();
+			directoryReader.readEntries(success, fail);
+		}
+
+		function fail(error) {
+			alert("Failed to list directory contents: " + error.code);
+		}
+
+		function success(entries) {
+			if (entries.length == 0)
+				alert("No videos.");
+			else {
+				for (var i = 0; i < entries.length; i++) {
+					entries[i].file(function (file) {
+						console.log("file.name " + file.name);
+						// $('#targets').append("<li><a href=''>"+file.name+"</a></li>").listview('refresh');
+						$('#videos').append("<li><a href='#' name='"+file.name+"' onclick='app.playVideo(name)'>" + file.name + "</a><a href='#' id='" + file.name + "' onclick='app.deleteVideo(id)'>Delete</a></li>").listview('refresh');
+					})
+				}
+			}
+			// alert('file list created');
+		}
+
+		function onDirectoryFail(error) {
+			alert("Unable to create new directory: " + error.code);
+		}
+
+		function onFileSystemFail(evt) {
+			alert(evt.target.error.code);
+		}
+
+		window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, onFileSystemSuccess, onFileSystemFail);
+	},
     // --- End Wikitude Plugin ---
 };
 
