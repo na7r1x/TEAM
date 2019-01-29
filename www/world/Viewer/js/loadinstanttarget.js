@@ -108,17 +108,17 @@ var World = {
                 } else if (model.type === 'link') {
 									model.link.height = 0.1;
 									console.log(model);
-									newDrawable = new AR.Label(model.link.text, model.link.height, {
-										translate: model.link.translate,
-										rotate: model.link.rotate,
-										scale: model.link.scale,
-										style: model.link.style,
-										onClick: function() {
-											AR.context.openInBrowser('http://google.com');
-										}
-									});
+									newDrawable = new AR.Label(model.link.text, model.link.height, model.link);
 									World.drawables.push(newDrawable);
-                }
+								} else if (model.type === 'video') {
+									model.video.height = 1;
+									console.log(model);
+									newDrawable = new AR.VideoDrawable(model.uri, model.video.height, model.video);
+									newDrawable.onClick = function () {
+										newDrawable.play();
+									};
+									World.drawables.push(newDrawable);
+								}
             });
             World.instantTrackable.drawables.addCamDrawable(World.drawables);
             alert("Loading was successful");

@@ -135,6 +135,9 @@ var app = {
             } else if (jsonObject.action === "present_poi_details") {
                 var alertMessage = "Poi '" + jsonObject.id + "' selected\nTitle: " + jsonObject.title + "\nDescription: " + jsonObject.description;
                 alert(alertMessage);
+            } else if (jsonObject.action === "get_video_absolute_path") {
+                var path = cordova.file.externalDataDirectory + "videos/" + jsonObject.name;
+                app.wikitudePlugin.callJavaScript("World.addVideo('"+path+"', 0, 0);");
             } else if (jsonObject.action === "save_current_instant_target") {
                 window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function(fileSystem){
                     fileSystem.getFile("SavedAugmentations.json", {create: true, exclusive: false}, function(fileEntry){
@@ -182,10 +185,10 @@ var app = {
                     }, app.loadError);
                 }, app.loadError);
             } else if (jsonObject.action === "delete_instant_target") {
-								app.deleteTracker(jsonObject.name);
-						} else if (jsonObject.action === "get_video_absolute_path") {
-							app.wikitudePlugin.callJavaScript("World.addVideo("+cordova.file.externalDataDirectory+"videos/"+jsonObject.name+");");
-						} else if (jsonObject.action === "get_saved_models") {
+                    app.deleteTracker(jsonObject.name);
+            } else if (jsonObject.action === "get_video_absolute_path") {
+                app.wikitudePlugin.callJavaScript("World.addVideo("+cordova.file.externalDataDirectory+"videos/"+jsonObject.name+");");
+            } else if (jsonObject.action === "get_saved_models") {
               // alert('received json')
               window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function(fileSystem) {
                 // var directoryEntry = fileSystem;
@@ -203,6 +206,24 @@ var app = {
 									}, app.loadError);
 								}, app.loadError);
               }, app.loadError);
+            } else if (jsonObject.action === "get_saved_videos") {
+                // alert('received json')
+                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (fileSystem) {
+                    // var directoryEntry = fileSystem;
+                    // directoryEntry.getDirectory("targets", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
+                    fileSystem.getDirectory('videos', { create: true, exclusive: false }, function (dir) {
+                        var directoryReader = dir.createReader();
+                        directoryReader.readEntries(function (videos) {
+                            if (videos.length == 0)
+                                alert("No videos.");
+                            else {
+                                // alert(videos);
+                                console.log(videos);
+                                app.wikitudePlugin.callJavaScript("World.getVideos(" + JSON.stringify(videos) + ");");
+                            }
+                        }, app.loadError);
+                    }, app.loadError);
+                }, app.loadError);
             }
         }
     },

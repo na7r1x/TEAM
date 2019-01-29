@@ -41,7 +41,10 @@ var World = {
 
     init: function initFn() {
         this.showUserInstructions("Running without platform assisted tracking (ARKit or ARCore).");
-        World.createOverlays();
+				World.createOverlays();
+			AR.platform.sendJSONObject({
+				action: "get_saved_videos"
+			});
     },
 
     createOverlays: function createOverlaysFn() {
@@ -159,29 +162,38 @@ var World = {
         document.getElementById("tracking-model-button-link").addEventListener('touchstart', function ( /*ev*/) {
             World.requestedModel = 6;
 				}, false);
-				document.getElementById("tracking-model-button-video").addEventListener('touchstart', function ( /*ev*/) {
-					World.requestedModel = 7;
+				document.getElementById("tracking-model-button-video").addEventListener('click', function ( /*ev*/) {
+					$("#selectVideo").selectmenu("open");
+
+					// World.requestedModel = 7;
 				}, false);
     },
 
     updatePlaneDrag: function updatePlaneDragFn(xPos, yPos) {
+			console.log('X:');
+			console.log(xPos);
+			console.log('Y:');
+			console.log(yPos);
         if (World.requestedModel >= 0) {
           if (World.requestedModel === 5) {
             World.addLabel("default", xPos, yPos);
             World.requestedModel = -1;
             World.initialDrag = true;
 					} else if (World.requestedModel === 6) {
-						World.addLink("default", xPos, yPos);
-						World.requestedModel = -1;
-						World.initialDrag = true;
-					} else if (World.requestedModel === 7) {
-						World.addVideo("default", xPos, yPos);
-						World.requestedModel = -1;
-						World.initialDrag = true;
-					} else {
-						World.addModel(World.requestedModel, xPos, yPos);
-						World.requestedModel = -1;
-						World.initialDrag = true;
+							World.addLink("default", xPos, yPos);
+							World.requestedModel = -1;
+							World.initialDrag = true;
+					} 
+					// else if (World.requestedModel === 7) {
+					// 		// World.getVideo("default", xPos, yPos);
+					// 		$('#select').trigger('focus');
+					// 		World.requestedModel = -1;
+					// 		World.initialDrag = true;
+					// } 
+					else {
+							World.addModel(World.requestedModel, xPos, yPos);
+							World.requestedModel = -1;
+							World.initialDrag = true;
 					}
         }
 
@@ -433,25 +445,49 @@ var World = {
 			}
 		},
 
-	getVideo: function getVideoFn(videoname) {
+	getVideo: function getVideoFn(videoname, xPos, yPos) {
 		AR.platform.sendJSONObject({
 			action: "get_video_absolute_path",
-			name: 'gaurelchito-1548623706.mp4'
+            name: videoname,
+            xPos: 1,
+            yPos: 1
 		});
+		$("#selectVideo").selectmenu("close");
+
+    },
+    
+	getVideos: function getVideosFn(data) {
+			console.log(data);
+			if (data.length === 0) {
+
+			} else {
+					for (var i = 0; i < data.length; i++) {
+							console.log("file.name " + data[i].name);
+							$('#selectVideo').append("<option value='" + data[i].name + "'>" + data[i].name + "</li>").selectmenu('refresh');
+							// $('#select').append("<input type='radio' name='load' id='" + data[i].name + "' value='" + data[i].name +"'><label for='"+data[i].name+"'>"+data[i].name+"</label>");
+					}
+					// $('#select').trigger('change');
+					// $('input[type=radio]').checkboxradio().trigger('create');
+					// $('a.ui-btn').button().trigger('create');
+			}
 	},
 
 	addVideo: function addVideoFn(path, xpos, ypos) {
+		console.log('addVideo triggered');
+		// console.log(xpos);
+		// console.log(ypos);
 		if (World.isTracking()) {
 			var labelIndex = rotationValues.length;
 			World.addModelValues();
 
-			var video = new AR.VideoDrawable('assets/test.mp4', 0.5, {
-				offsetY: 1,
+			var video = new AR.VideoDrawable(path, 1, {
+				offsetY: 0,
 				// onClick: function (l) {
 				// 	l.play();
 				// },
 				rotate: {
-					tilt: -90
+					// tilt: -90
+					// roll: 90
 				},
 				style: {
 					backgroundColor: '#cccccc'
@@ -510,6 +546,8 @@ var World = {
 				video.play();
 			};
 
+			video.uri = path;
+
 			allCurrentVideos.push(video);
 			World.lastAddedModel = video;
 			this.instantTrackable.drawables.addCamDrawable(video);
@@ -563,8 +601,8 @@ var World = {
 
         allCurrentLabels.forEach(function(label) {
             augmentations.push({
-                type: 'label',
-                label: label
+								type: 'label',
+								label: label
             });
 				});
 				
@@ -578,6 +616,7 @@ var World = {
 				allCurrentVideos.forEach(function (video) {
 					augmentations.push({
 						type: 'video',
+						uri: video.uri,
 						video: video
 					});
 				});
