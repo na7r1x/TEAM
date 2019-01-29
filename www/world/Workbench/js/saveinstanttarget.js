@@ -375,9 +375,9 @@ var World = {
 
 				var link = new AR.Label(label, 0.1, {
 					offsetY: 1,
-					// onClick: function (l) {
-					// 	AR.context.openInBrowser(url);
-					// },
+					onClick: function (l) {
+						AR.context.openInBrowser(url);
+					},
 					rotate: {
 						tilt: -90
 					},
@@ -434,9 +434,12 @@ var World = {
 					onError: World.onError
 				});
 
-				link.linkUrl = url;
+				var aug = {
+					link: link,
+					url: url
+				}
 
-				allCurrentLinks.push(link);
+				allCurrentLinks.push(aug);
 				World.lastAddedModel = link;
 				this.instantTrackable.drawables.addCamDrawable(link);
 
@@ -609,7 +612,8 @@ var World = {
 				allCurrentLinks.forEach(function(link) {
             augmentations.push({
                 type: 'link',
-                link: link
+								link: link.link,
+								url: link.url
             });
 				});
 				

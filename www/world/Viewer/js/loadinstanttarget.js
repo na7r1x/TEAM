@@ -109,6 +109,9 @@ var World = {
 									model.link.height = 0.1;
 									console.log(model);
 									newDrawable = new AR.Label(model.link.text, model.link.height, model.link);
+									newDrawable.onClick = function () {
+										AR.context.openInBrowser(model.url);
+									};
 									World.drawables.push(newDrawable);
 								} else if (model.type === 'video') {
 									model.video.height = 1;
