@@ -2,10 +2,10 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes" name="viewport">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=2,user-scalable=yes" name="viewport">
 
     <!-- disables pinch-scaling of the webview, so that gestures only do what they're supposed to -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9, user-scalable=no"/>
 
     <title></title>
 
@@ -28,47 +28,61 @@
 <div data-role="page" id="page1" style="background: none;">
 
     <div id="top-wrapper">
-        <div id="loadingMessage" class="info"></div>
+        <!-- <div id="loadingMessage" class="info"></div> -->
 
-        <div class="slider-save-container">
+        <div class="slider-save-container" id='tracking-controls'>
             <div id="tracking-height-slider-container">
-                <input id="tracking-height-slider" type="range" min="0.1" value="1.0" max="2.0" step="0.1"
-                       onchange="World.changeTrackingHeight(value)">
+                <label for="tracking-height-slider">Scale:</label>
+                <input id="tracking-height-slider" name="tracking-height-slider" type="range" min="0.1" value="1.0" max="2.0" step="0.1"
+                       onchange="World.changeTrackingHeight(value)" data-mini="true">
             </div>
-            <input class="image-button" type="image" src="assets/buttons/save.png"
-                   onclick="World.saveCurrentInstantTarget()">
+            <div id="tracking-angle-slider-container">
+                <label for="tracking-angle-slider">Angle:</label>
+                <input id="tracking-angle-slider" name="tracking-angle-slider" type="range" min="-90.0" value="0.0" max="90.0" step="1.0"
+                       onchange="World.changeTrackingAngle(value)" data-mini="true">
+            </div>
+        </div>
+        <div class="slider-save-container" id='aug-controls'>
+            <div id="aug-x-slider-container" class="table-container">
+                <label for="aug-x-slider" class="table-cell">rotX:</label>
+                <input id="aug-x-slider" class="table-cell" name="aug-x-slider" type="range" min="0" value="0" max="360"
+                    step="1" onchange="World.selectedRotateX(value)" data-mini="true">
+            </div>
+            <div id="aug-y-slider-container" class="table-container">
+                <label for="aug-y-slider" class="table-cell">rotY:</label>
+                <input id="aug-y-slider" class="table-cell" name="aug-y-slider" type="range" min="0" value="0" max="360" 
+                    step="1" onchange="World.selectedRotateY(value)" data-mini="true">
+            </div>
+            <div id="aug-y-slider-container" class="table-container">
+                <label for="aug-x-slider" class="table-cell">rotZ:</label>
+                <input id="aug-x-slider" class="table-cell" name="aug-x-slider" type="range" min="0" value="0" max="360" 
+                    step="1" onchange="World.selectedRotateZ(value)" data-mini="true">
+            </div>
+            <div id="aug-tZ-slider-container" class="table-container">
+                <label for="aug-tZ-slider" class="table-cell">Z:</label>
+                <input id="aug-tZ-slider" class="table-cell" name="aug-tZ-slider" type="range" min="-3" value="0" max="3" 
+                    step="0.01" onchange="World.selectedTranslateZ(value)" data-mini="true">
+            </div>
         </div>
         <div class="container">
-            <div id="tracking-angle-slider-container">
-                <input id="tracking-angle-slider" type="range" min="-90.0" value="0.0" max="90.0" step="1.0"
-                       onchange="World.changeTrackingAngle(value)">
-            </div>
+                <input class="image-button" type="image" src="assets/buttons/save.png"
+                       onclick="World.saveCurrentInstantTarget()">
         </div>
     </div>
 
     <div id="tracking-controls-container-lower-1">
-      <input id="tracking-model-button-video" class="model-button image-button image-button-inactive" type="image" 
-      src="assets/buttons/link.png" />
-      <input id="tracking-model-button-link" class="model-button image-button image-button-inactive" type="image" 
-      src="assets/buttons/link.png" />
-      <input id="tracking-model-button-label" class="model-button image-button image-button-inactive" type="image"
-      src="assets/buttons/text.png"/>
-      <input id="tracking-model-button-clock" class="model-button image-button image-button-inactive" type="image"
-      src="assets/buttons/clock.png"/>
-      <input id="tracking-model-button-couch" class="model-button image-button image-button-inactive" type="image"
-      src="assets/buttons/couch.png"/>
-      <input id="tracking-model-button-chair" class="model-button image-button image-button-inactive" type="image"
-      src="assets/buttons/office_chair.png"/>
-      <input id="tracking-model-button-table" class="model-button image-button image-button-inactive" type="image"
-      src="assets/buttons/table.png"/>
-      <input id="tracking-model-button-trainer" class="model-button image-button image-button-inactive" type="image"
-      src="assets/buttons/trainer.png"/>
+      
     </div>
-
+    
     <div id="tracking-controls-container-lower-2">
         <input id="tracking-start-stop-button" class="image-button" type="image" src="assets/buttons/start.png"
                onclick="World.changeTrackerState()"/>
         <!-- <div id="tracking-controls-container-lower-spacing"></div> -->
+        <input id="tracking-model-button-video" class="model-button image-button image-button-inactive" type="image" src="assets/buttons/link.png" />
+        <input id="tracking-model-button-link" class="model-button image-button image-button-inactive" type="image" src="assets/buttons/link.png" />
+        <input id="tracking-model-button-label" class="model-button image-button image-button-inactive" type="image" src="assets/buttons/text.png" />
+        <input id="tracking-model-button-clock" class="model-button image-button image-button-inactive" type="image" src="assets/buttons/clock.png" />
+        <input id="tracking-model-button-couch" class="model-button image-button image-button-inactive" type="image" src="assets/buttons/couch.png" />
     </div>
 
     <div data-role="fieldcontain" style="display:none;">

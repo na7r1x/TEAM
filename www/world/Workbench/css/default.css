@@ -16,6 +16,11 @@ body {
     width: 85%;
 }
 
+#tracking-angle-slider-container {
+    max-width: 500px;
+    width: 95%;
+}
+
 #tracking-controls-container-lower-1 {
     position: absolute;
     right: 0;
@@ -40,8 +45,21 @@ body {
     max-width: 20px;
 }
 
+#aug-controls {
+    flex-direction: column;
+}
+
+.table-container {
+    display: table;
+}
+
+.table-cell {
+    display: table-cell!important;
+    vertical-align: middle;
+}
+
 .slider-save-container {
-    padding: 5px;
+    padding: 3px;
     display: flex;
     justify-content: space-between;
 }
@@ -103,4 +121,16 @@ and (orientation: landscape) {
         max-width: 50px;
         max-height: 50px;
     }
+}
+
+ 
+/* override jquery mobile */
+input.ui-input-text.ui-slider-input {
+    height: 0.8em;
+    line-height: 0.8em;
+    font-size: 0.7em;
+}
+
+label.ui-slider {
+    display: inline-block;
 }

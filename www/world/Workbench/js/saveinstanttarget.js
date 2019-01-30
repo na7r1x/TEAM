@@ -9,6 +9,8 @@ var allCurrentLabels = [];
 var allCurrentLinks = [];
 var allCurrentVideos= [];
 
+var selectedAug;
+
 var oneFingerGestureAllowed = false;
 
 /*
@@ -40,7 +42,7 @@ var World = {
     lastAddedModel: null,
 
     init: function initFn() {
-        this.showUserInstructions("Running without platform assisted tracking (ARKit or ARCore).");
+        // this.showUserInstructions("Running without platform assisted tracking (ARKit or ARCore).");
 				World.createOverlays();
 			AR.platform.sendJSONObject({
 				action: "get_saved_videos"
@@ -74,16 +76,20 @@ var World = {
                     });
 
                     document.getElementById("tracking-start-stop-button").src = "assets/buttons/start.png";
-                    document.getElementById("tracking-height-slider-container").style.visibility = "visible";
-                    document.getElementById("tracking-angle-slider-container").style.visibility = "visible";
+                    // document.getElementById("tracking-height-slider-container").style.visibility = "visible";
+                    // document.getElementById("tracking-angle-slider-container").style.visibility = "visible";
+                    $('#aug-controls').css('display', 'none');
+                    $('#tracking-controls').css('display', 'flex');
                 } else {
                     els.forEach(function(element) {
                         element.classList.remove("image-button-inactive");
                     });
 
                     document.getElementById("tracking-start-stop-button").src = "assets/buttons/stop.png";
-                    document.getElementById("tracking-height-slider-container").style.visibility = "hidden";
-                    document.getElementById("tracking-angle-slider-container").style.visibility = "hidden";
+                    // document.getElementById("tracking-height-slider-container").style.visibility = "hidden";
+                    // document.getElementById("tracking-angle-slider-container").style.visibility = "hidden";
+                    $('#aug-controls').css('display', 'flex');
+                    $('#tracking-controls').css('display', 'none');
                 }
             },
             /*
@@ -147,15 +153,15 @@ var World = {
         document.getElementById("tracking-model-button-couch").addEventListener('touchstart', function( /*ev*/ ) {
             World.requestedModel = 1;
         }, false);
-        document.getElementById("tracking-model-button-chair").addEventListener('touchstart', function( /*ev*/ ) {
-            World.requestedModel = 2;
-        }, false);
-        document.getElementById("tracking-model-button-table").addEventListener('touchstart', function( /*ev*/ ) {
-            World.requestedModel = 3;
-        }, false);
-        document.getElementById("tracking-model-button-trainer").addEventListener('touchstart', function( /*ev*/ ) {
-            World.requestedModel = 4;
-        }, false);
+        // document.getElementById("tracking-model-button-chair").addEventListener('touchstart', function( /*ev*/ ) {
+        //     World.requestedModel = 2;
+        // }, false);
+        // document.getElementById("tracking-model-button-table").addEventListener('touchstart', function( /*ev*/ ) {
+        //     World.requestedModel = 3;
+        // }, false);
+        // document.getElementById("tracking-model-button-trainer").addEventListener('touchstart', function( /*ev*/ ) {
+        //     World.requestedModel = 4;
+        // }, false);
         document.getElementById("tracking-model-button-label").addEventListener('touchstart', function( /*ev*/ ) {
             World.requestedModel = 5;
         }, false);
@@ -170,10 +176,10 @@ var World = {
     },
 
     updatePlaneDrag: function updatePlaneDragFn(xPos, yPos) {
-			console.log('X:');
-			console.log(xPos);
-			console.log('Y:');
-			console.log(yPos);
+			// console.log('X:');
+			// console.log(xPos);
+			// console.log('Y:');
+			// console.log(yPos);
         if (World.requestedModel >= 0) {
           if (World.requestedModel === 5) {
             World.addLabel("default", xPos, yPos);
@@ -284,6 +290,12 @@ var World = {
                 onScaleEnded: function( /*scale*/ ) {
                     scaleValues[modelIndex] = this.scale.x;
                 },
+                onClick: function() {
+                    selectedAug = this;
+                    // $("#aug-x-slider").val(this.rotate.x);
+                    // $("#aug-y-slider").val(this.rotate.y);
+                    // $("#aug-z-slider").val(this.rotate.z);
+                },
                 onError: World.onError
             });
 
@@ -300,9 +312,10 @@ var World = {
 
             var label = new AR.Label(prompt('Text:'), 0.1, {
                 offsetY : 1,
-                // onClick : function(l) {
-                //   AR.context.openInBrowser('https://google.com');
-                // },
+                onClick : function(l) {
+                    selectedAug = this;
+
+                },
                 rotate: {
                   tilt: -90
                 },
@@ -376,8 +389,9 @@ var World = {
 				var link = new AR.Label(label, 0.1, {
 					offsetY: 1,
 					onClick: function (l) {
+                        selectedAug = this;
 						AR.context.openInBrowser(url);
-					},
+                    },
 					rotate: {
 						tilt: -90
 					},
@@ -546,6 +560,7 @@ var World = {
 			});
 
 			video.onClick = function() {
+                selectedAug = this;
 				video.play();
 			};
 
@@ -653,6 +668,27 @@ var World = {
 
     showUserInstructions: function showUserInstructionsFn(message) {
         document.getElementById('loadingMessage').innerHTML = message;
+    },
+
+    selectedRotateX: function(degrees) {
+        if (typeof selectedAug !== 'undefined') {
+            selectedAug.rotate.x = parseInt(degrees);
+        }
+    },
+    selectedRotateY: function(degrees) {
+        if (typeof selectedAug !== 'undefined') {
+            selectedAug.rotate.y = parseInt(degrees);
+        }    
+    },
+    selectedRotateZ: function(degrees) {
+        if (typeof selectedAug !== 'undefined') {
+            selectedAug.rotate.z = parseInt(degrees);
+        }
+    },
+    selectedTranslateZ: function(degrees) {
+        if (typeof selectedAug !== 'undefined') {
+            selectedAug.translate.z = parseFloat(degrees);
+        }
     }
 };
 
