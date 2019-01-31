@@ -1,3 +1,5 @@
+// GLOBAL VARIABLES
+// ----------------
 var defaultScaleValue = 0.045;
 var defaultRotationValue = 0;
 
@@ -7,20 +9,19 @@ var scaleValues = [];
 var allCurrentModels = [];
 var allCurrentLabels = [];
 var allCurrentLinks = [];
-var allCurrentVideos= [];
+var allCurrentVideos = [];
 
 var selectedAug;
 
 var oneFingerGestureAllowed = false;
 
-/*
-    This global callback can be utilized to react on the transition from and to 2 finger gestures; specifically, we
-    disallow the drag gesture in this case to ensure an intuitive experience.
-*/
-AR.context.on2FingerGestureStarted = function() {
+AR.context.on2FingerGestureStarted = function () {
     oneFingerGestureAllowed = false;
 };
 
+
+// WORLD INIT 
+// ----------
 var World = {
     modelPaths: [
         "assets/models/clock.wt3",
@@ -43,10 +44,10 @@ var World = {
 
     init: function initFn() {
         // this.showUserInstructions("Running without platform assisted tracking (ARKit or ARCore).");
-				World.createOverlays();
-			AR.platform.sendJSONObject({
-				action: "get_saved_videos"
-			});
+        World.createOverlays();
+        AR.platform.sendJSONObject({
+            action: "get_saved_videos"
+        });
     },
 
     createOverlays: function createOverlaysFn() {
@@ -71,7 +72,7 @@ var World = {
             onChangedState: function onChangedStateFn(state) {
                 var els = [].slice.apply(document.getElementsByClassName("model-button"));
                 if (state === AR.InstantTrackerState.INITIALIZING) {
-                    els.forEach(function(element) {
+                    els.forEach(function (element) {
                         element.classList.add("image-button-inactive");
                     });
 
@@ -79,9 +80,10 @@ var World = {
                     // document.getElementById("tracking-height-slider-container").style.visibility = "visible";
                     // document.getElementById("tracking-angle-slider-container").style.visibility = "visible";
                     $('#aug-controls').css('display', 'none');
+                    $('#deleteButton').css('display', 'none');
                     $('#tracking-controls').css('display', 'flex');
                 } else {
-                    els.forEach(function(element) {
+                    els.forEach(function (element) {
                         element.classList.remove("image-button-inactive");
                     });
 
@@ -89,6 +91,7 @@ var World = {
                     // document.getElementById("tracking-height-slider-container").style.visibility = "hidden";
                     // document.getElementById("tracking-angle-slider-container").style.visibility = "hidden";
                     $('#aug-controls').css('display', 'flex');
+                    $('#deleteButton').css('display', 'block');
                     $('#tracking-controls').css('display', 'none');
                 }
             },
@@ -133,7 +136,7 @@ var World = {
         });
 
         setInterval(
-            function() {
+            function () {
                 if (World.tracker.canStartTracking) {
                     World.instantTrackable.drawables.initialization = [World.crossHairsGreenDrawable];
                 } else {
@@ -147,10 +150,10 @@ var World = {
     },
 
     setupEventListeners: function setupEventListenersFn() {
-        document.getElementById("tracking-model-button-clock").addEventListener('touchstart', function( /*ev*/ ) {
+        document.getElementById("tracking-model-button-clock").addEventListener('touchstart', function ( /*ev*/ ) {
             World.requestedModel = 0;
         }, false);
-        document.getElementById("tracking-model-button-couch").addEventListener('touchstart', function( /*ev*/ ) {
+        document.getElementById("tracking-model-button-couch").addEventListener('touchstart', function ( /*ev*/ ) {
             World.requestedModel = 1;
         }, false);
         // document.getElementById("tracking-model-button-chair").addEventListener('touchstart', function( /*ev*/ ) {
@@ -162,45 +165,45 @@ var World = {
         // document.getElementById("tracking-model-button-trainer").addEventListener('touchstart', function( /*ev*/ ) {
         //     World.requestedModel = 4;
         // }, false);
-        document.getElementById("tracking-model-button-label").addEventListener('touchstart', function( /*ev*/ ) {
+        document.getElementById("tracking-model-button-label").addEventListener('touchstart', function ( /*ev*/ ) {
             World.requestedModel = 5;
         }, false);
-        document.getElementById("tracking-model-button-link").addEventListener('touchstart', function ( /*ev*/) {
+        document.getElementById("tracking-model-button-link").addEventListener('touchstart', function ( /*ev*/ ) {
             World.requestedModel = 6;
-				}, false);
-				document.getElementById("tracking-model-button-video").addEventListener('click', function ( /*ev*/) {
-					$("#selectVideo").selectmenu("open");
+        }, false);
+        document.getElementById("tracking-model-button-video").addEventListener('click', function ( /*ev*/ ) {
+            $("#selectVideo").selectmenu("open");
 
-					// World.requestedModel = 7;
-				}, false);
+            // World.requestedModel = 7;
+        }, false);
     },
 
     updatePlaneDrag: function updatePlaneDragFn(xPos, yPos) {
-			// console.log('X:');
-			// console.log(xPos);
-			// console.log('Y:');
-			// console.log(yPos);
+        // console.log('X:');
+        // console.log(xPos);
+        // console.log('Y:');
+        // console.log(yPos);
         if (World.requestedModel >= 0) {
-          if (World.requestedModel === 5) {
-            World.addLabel("default", xPos, yPos);
-            World.requestedModel = -1;
-            World.initialDrag = true;
-					} else if (World.requestedModel === 6) {
-							World.addLink("default", xPos, yPos);
-							World.requestedModel = -1;
-							World.initialDrag = true;
-					} 
-					// else if (World.requestedModel === 7) {
-					// 		// World.getVideo("default", xPos, yPos);
-					// 		$('#select').trigger('focus');
-					// 		World.requestedModel = -1;
-					// 		World.initialDrag = true;
-					// } 
-					else {
-							World.addModel(World.requestedModel, xPos, yPos);
-							World.requestedModel = -1;
-							World.initialDrag = true;
-					}
+            if (World.requestedModel === 5) {
+                World.addLabel("default", xPos, yPos);
+                World.requestedModel = -1;
+                World.initialDrag = true;
+            } else if (World.requestedModel === 6) {
+                World.addLink("default", xPos, yPos);
+                World.requestedModel = -1;
+                World.initialDrag = true;
+            }
+            // else if (World.requestedModel === 7) {
+            // 		// World.getVideo("default", xPos, yPos);
+            // 		$('#select').trigger('focus');
+            // 		World.requestedModel = -1;
+            // 		World.initialDrag = true;
+            // } 
+            else {
+                World.addModel(World.requestedModel, xPos, yPos);
+                World.requestedModel = -1;
+                World.initialDrag = true;
+            }
         }
 
         if (World.initialDrag && oneFingerGestureAllowed) {
@@ -228,6 +231,9 @@ var World = {
         this.tracker.trackingPlaneOrientation = parseFloat(angle);
     },
 
+
+    // AUGMENTATION INITIALISATION METHODS
+    // -----------------------------------
     addModel: function addModelFn(pathIndex, xpos, ypos) {
         if (World.isTracking()) {
             var modelIndex = rotationValues.length;
@@ -243,43 +249,33 @@ var World = {
                     x: xpos,
                     y: ypos
                 },
-                /*
-                    We recommend only implementing the callbacks actually needed as they will cause calls from
-                    native to JavaScript being invoked. Especially for the frequently called changed callbacks this
-                    should be avoided. In this sample all callbacks are implemented simply for demonstrative purposes.
-                */
-                onDragBegan: function( /*x, y*/ ) {
+                onDragBegan: function ( /*x, y*/ ) {
                     oneFingerGestureAllowed = true;
                 },
-                onDragChanged: function(relativeX, relativeY, intersectionX, intersectionY) {
+                onDragChanged: function (relativeX, relativeY, intersectionX, intersectionY) {
                     if (oneFingerGestureAllowed) {
-                        /*
-                            We recommend setting the entire translate property rather than its individual components
-                            as the latter would cause several call to native, which can potentially lead to performance
-                            issues on older devices. The same applied to the rotate and scale property.
-                        */
                         this.translate = {
                             x: intersectionX,
                             y: intersectionY
                         };
                     }
                 },
-                onDragEnded: function(x, y) {
+                onDragEnded: function (x, y) {
                     /* React to the drag gesture ending. */
                 },
-                onRotationBegan: function(angleInDegrees) {
+                onRotationBegan: function (angleInDegrees) {
                     /* React to the rotation gesture beginning. */
                 },
-                onRotationChanged: function(angleInDegrees) {
+                onRotationChanged: function (angleInDegrees) {
                     this.rotate.z = rotationValues[modelIndex] - angleInDegrees;
                 },
-                onRotationEnded: function( /*angleInDegrees*/ ) {
+                onRotationEnded: function ( /*angleInDegrees*/ ) {
                     rotationValues[modelIndex] = this.rotate.z
                 },
-                onScaleBegan: function(scale) {
+                onScaleBegan: function (scale) {
                     /* React to the scale gesture beginning. */
                 },
-                onScaleChanged: function(scale) {
+                onScaleChanged: function (scale) {
                     var scaleValue = scaleValues[modelIndex] * scale;
                     this.scale = {
                         x: scaleValue,
@@ -287,14 +283,11 @@ var World = {
                         z: scaleValue
                     };
                 },
-                onScaleEnded: function( /*scale*/ ) {
+                onScaleEnded: function ( /*scale*/ ) {
                     scaleValues[modelIndex] = this.scale.x;
                 },
-                onClick: function() {
+                onClick: function () {
                     selectedAug = this;
-                    // $("#aug-x-slider").val(this.rotate.x);
-                    // $("#aug-y-slider").val(this.rotate.y);
-                    // $("#aug-z-slider").val(this.rotate.z);
                 },
                 onError: World.onError
             });
@@ -311,54 +304,44 @@ var World = {
             World.addModelValues();
 
             var label = new AR.Label(prompt('Text:'), 0.1, {
-                offsetY : 1,
-                onClick : function(l) {
+                offsetY: 1,
+                onClick: function (l) {
                     selectedAug = this;
 
                 },
                 rotate: {
-                  tilt: -90
+                    tilt: -90
                 },
                 style: {
-                  backgroundColor: '#cccccc'
+                    backgroundColor: '#cccccc'
                 },
-                /*
-                    We recommend only implementing the callbacks actually needed as they will cause calls from
-                    native to JavaScript being invoked. Especially for the frequently called changed callbacks this
-                    should be avoided. In this sample all callbacks are implemented simply for demonstrative purposes.
-                */
-                onDragBegan: function( /*x, y*/ ) {
+                onDragBegan: function ( /*x, y*/ ) {
                     oneFingerGestureAllowed = true;
                 },
-                onDragChanged: function(relativeX, relativeY, intersectionX, intersectionY) {
+                onDragChanged: function (relativeX, relativeY, intersectionX, intersectionY) {
                     if (oneFingerGestureAllowed) {
-                        /*
-                            We recommend setting the entire translate property rather than its individual components
-                            as the latter would cause several call to native, which can potentially lead to performance
-                            issues on older devices. The same applied to the rotate and scale property.
-                        */
                         this.translate = {
                             x: intersectionX,
                             y: intersectionY
                         };
                     }
                 },
-                onDragEnded: function(x, y) {
+                onDragEnded: function (x, y) {
                     /* React to the drag gesture ending. */
                 },
-                onRotationBegan: function(angleInDegrees) {
+                onRotationBegan: function (angleInDegrees) {
                     /* React to the rotation gesture beginning. */
                 },
-                onRotationChanged: function(angleInDegrees) {
+                onRotationChanged: function (angleInDegrees) {
                     this.rotate.z = rotationValues[labelIndex] - angleInDegrees;
                 },
-                onRotationEnded: function( /*angleInDegrees*/ ) {
+                onRotationEnded: function ( /*angleInDegrees*/ ) {
                     rotationValues[labelIndex] = this.rotate.z
                 },
-                onScaleBegan: function(scale) {
+                onScaleBegan: function (scale) {
                     /* React to the scale gesture beginning. */
                 },
-                onScaleChanged: function(scale) {
+                onScaleChanged: function (scale) {
                     var scaleValue = scaleValues[labelIndex] * scale;
                     this.scale = {
                         x: scaleValue,
@@ -366,7 +349,7 @@ var World = {
                         z: scaleValue
                     };
                 },
-                onScaleEnded: function( /*scale*/ ) {
+                onScaleEnded: function ( /*scale*/ ) {
                     scaleValues[labelIndex] = this.scale.x;
                 },
                 onError: World.onError
@@ -376,204 +359,287 @@ var World = {
             World.lastAddedModel = label;
             this.instantTrackable.drawables.addCamDrawable(label);
         }
-		},
-		
-		addLink: function addLabelFn(text, xpos, ypos) {
-			if (World.isTracking()) {
-				var labelIndex = rotationValues.length;
-				World.addModelValues();
+    },
 
-				var label = prompt('Link label:');
-				var url = prompt('URL', 'http://');
+    addLink: function addLabelFn(text, xpos, ypos) {
+        if (World.isTracking()) {
+            var labelIndex = rotationValues.length;
+            World.addModelValues();
 
-				var link = new AR.Label(label, 0.1, {
-					offsetY: 1,
-					onClick: function (l) {
-                        selectedAug = this;
-						AR.context.openInBrowser(url);
-                    },
-					rotate: {
-						tilt: -90
-					},
-					style: {
-						backgroundColor: '#cccccc'
-					},
-					/*
-							We recommend only implementing the callbacks actually needed as they will cause calls from
-							native to JavaScript being invoked. Especially for the frequently called changed callbacks this
-							should be avoided. In this sample all callbacks are implemented simply for demonstrative purposes.
-					*/
-					onDragBegan: function ( /*x, y*/) {
-						oneFingerGestureAllowed = true;
-					},
-					onDragChanged: function (relativeX, relativeY, intersectionX, intersectionY) {
-						if (oneFingerGestureAllowed) {
-							/*
-									We recommend setting the entire translate property rather than its individual components
-									as the latter would cause several call to native, which can potentially lead to performance
-									issues on older devices. The same applied to the rotate and scale property.
-							*/
-							this.translate = {
-								x: intersectionX,
-								y: intersectionY
-							};
-						}
-					},
-					onDragEnded: function (x, y) {
-						/* React to the drag gesture ending. */
-					},
-					onRotationBegan: function (angleInDegrees) {
-						/* React to the rotation gesture beginning. */
-					},
-					onRotationChanged: function (angleInDegrees) {
-						this.rotate.z = rotationValues[labelIndex] - angleInDegrees;
-					},
-					onRotationEnded: function ( /*angleInDegrees*/) {
-						rotationValues[labelIndex] = this.rotate.z
-					},
-					onScaleBegan: function (scale) {
-						/* React to the scale gesture beginning. */
-					},
-					onScaleChanged: function (scale) {
-						var scaleValue = scaleValues[labelIndex] * scale;
-						this.scale = {
-							x: scaleValue,
-							y: scaleValue,
-							z: scaleValue
-						};
-					},
-					onScaleEnded: function ( /*scale*/) {
-						scaleValues[labelIndex] = this.scale.x;
-					},
-					onError: World.onError
-				});
+            var label = prompt('Link label:');
+            var url = prompt('URL', 'http://');
 
-				var aug = {
-					link: link,
-					url: url
-				}
+            var link = new AR.Label(label, 0.1, {
+                offsetY: 1,
+                onClick: function (l) {
+                    selectedAug = this;
+                    AR.context.openInBrowser(url);
+                },
+                rotate: {
+                    tilt: -90
+                },
+                style: {
+                    backgroundColor: '#cccccc'
+                },
+                onDragBegan: function ( /*x, y*/ ) {
+                    oneFingerGestureAllowed = true;
+                },
+                onDragChanged: function (relativeX, relativeY, intersectionX, intersectionY) {
+                    if (oneFingerGestureAllowed) {
+                        this.translate = {
+                            x: intersectionX,
+                            y: intersectionY
+                        };
+                    }
+                },
+                onDragEnded: function (x, y) {
+                    /* React to the drag gesture ending. */
+                },
+                onRotationBegan: function (angleInDegrees) {
+                    /* React to the rotation gesture beginning. */
+                },
+                onRotationChanged: function (angleInDegrees) {
+                    this.rotate.z = rotationValues[labelIndex] - angleInDegrees;
+                },
+                onRotationEnded: function ( /*angleInDegrees*/ ) {
+                    rotationValues[labelIndex] = this.rotate.z
+                },
+                onScaleBegan: function (scale) {
+                    /* React to the scale gesture beginning. */
+                },
+                onScaleChanged: function (scale) {
+                    var scaleValue = scaleValues[labelIndex] * scale;
+                    this.scale = {
+                        x: scaleValue,
+                        y: scaleValue,
+                        z: scaleValue
+                    };
+                },
+                onScaleEnded: function ( /*scale*/ ) {
+                    scaleValues[labelIndex] = this.scale.x;
+                },
+                onError: World.onError
+            });
 
-				allCurrentLinks.push(aug);
-				World.lastAddedModel = link;
-				this.instantTrackable.drawables.addCamDrawable(link);
+            var aug = {
+                link: link,
+                url: url
+            }
 
-				console.log(link);
-				
-			}
-		},
+            allCurrentLinks.push(aug);
+            World.lastAddedModel = link;
+            this.instantTrackable.drawables.addCamDrawable(link);
 
-	getVideo: function getVideoFn(videoname, xPos, yPos) {
-		AR.platform.sendJSONObject({
-			action: "get_video_absolute_path",
+            console.log(link);
+
+        }
+    },
+
+    addVideo: function addVideoFn(path, xpos, ypos) {
+        console.log('addVideo triggered');
+        // console.log(xpos);
+        // console.log(ypos);
+        if (World.isTracking()) {
+            var labelIndex = rotationValues.length;
+            World.addModelValues();
+
+            var video = new AR.VideoDrawable(path, 1, {
+                offsetY: 0,
+                // onClick: function (l) {
+                // 	l.play();
+                // },
+                rotate: {
+                    // tilt: -90
+                    // roll: 90
+                },
+                style: {
+                    backgroundColor: '#cccccc'
+                },
+                onDragBegan: function ( /*x, y*/ ) {
+                    oneFingerGestureAllowed = true;
+                },
+                onDragChanged: function (relativeX, relativeY, intersectionX, intersectionY) {
+                    if (oneFingerGestureAllowed) {
+                        // Setting all three values of translate/scale/rotate at once is more efficient 
+                        this.translate = {
+                            x: intersectionX,
+                            y: intersectionY
+                        };
+                    }
+                },
+                onDragEnded: function (x, y) {
+                    /* React to the drag gesture ending. */
+                },
+                onRotationBegan: function (angleInDegrees) {
+                    /* React to the rotation gesture beginning. */
+                },
+                onRotationChanged: function (angleInDegrees) {
+                    this.rotate.z = rotationValues[labelIndex] - angleInDegrees;
+                },
+                onRotationEnded: function ( /*angleInDegrees*/ ) {
+                    rotationValues[labelIndex] = this.rotate.z
+                },
+                onScaleBegan: function (scale) {
+                    /* React to the scale gesture beginning. */
+                },
+                onScaleChanged: function (scale) {
+                    var scaleValue = scaleValues[labelIndex] * scale;
+                    this.scale = {
+                        x: scaleValue,
+                        y: scaleValue,
+                        z: scaleValue
+                    };
+                },
+                onScaleEnded: function ( /*scale*/ ) {
+                    scaleValues[labelIndex] = this.scale.x;
+                },
+                onError: World.onError
+            });
+
+            video.onClick = function () {
+                selectedAug = this;
+                video.play();
+            };
+
+            video.uri = path;
+
+            allCurrentVideos.push(video);
+            World.lastAddedModel = video;
+            this.instantTrackable.drawables.addCamDrawable(video);
+
+            console.log(video);
+
+        }
+    },
+
+
+    // NATIVE GETTERS
+    // --------------
+    getVideo: function getVideoFn(videoname, xPos, yPos) {
+        AR.platform.sendJSONObject({
+            action: "get_video_absolute_path",
             name: videoname,
             xPos: 1,
             yPos: 1
-		});
-		$("#selectVideo").selectmenu("close");
+        });
+        $("#selectVideo").selectmenu("close");
 
     },
-    
-	getVideos: function getVideosFn(data) {
-			console.log(data);
-			if (data.length === 0) {
 
-			} else {
-					for (var i = 0; i < data.length; i++) {
-							console.log("file.name " + data[i].name);
-							$('#selectVideo').append("<option value='" + data[i].name + "'>" + data[i].name + "</li>").selectmenu('refresh');
-							// $('#select').append("<input type='radio' name='load' id='" + data[i].name + "' value='" + data[i].name +"'><label for='"+data[i].name+"'>"+data[i].name+"</label>");
-					}
-					// $('#select').trigger('change');
-					// $('input[type=radio]').checkboxradio().trigger('create');
-					// $('a.ui-btn').button().trigger('create');
-			}
-	},
+    getVideos: function getVideosFn(data) {
+        console.log(data);
+        if (data.length === 0) {
 
-	addVideo: function addVideoFn(path, xpos, ypos) {
-		console.log('addVideo triggered');
-		// console.log(xpos);
-		// console.log(ypos);
-		if (World.isTracking()) {
-			var labelIndex = rotationValues.length;
-			World.addModelValues();
+        } else {
+            for (var i = 0; i < data.length; i++) {
+                console.log("file.name " + data[i].name);
+                $('#selectVideo').append("<option value='" + data[i].name + "'>" + data[i].name + "</li>").selectmenu('refresh');
+                // $('#select').append("<input type='radio' name='load' id='" + data[i].name + "' value='" + data[i].name +"'><label for='"+data[i].name+"'>"+data[i].name+"</label>");
+            }
+            // $('#select').trigger('change');
+            // $('input[type=radio]').checkboxradio().trigger('create');
+            // $('a.ui-btn').button().trigger('create');
+        }
+    },
 
-			var video = new AR.VideoDrawable(path, 1, {
-				offsetY: 0,
-				// onClick: function (l) {
-				// 	l.play();
-				// },
-				rotate: {
-					// tilt: -90
-					// roll: 90
-				},
-				style: {
-					backgroundColor: '#cccccc'
-				},
-				/*
-						We recommend only implementing the callbacks actually needed as they will cause calls from
-						native to JavaScript being invoked. Especially for the frequently called changed callbacks this
-						should be avoided. In this sample all callbacks are implemented simply for demonstrative purposes.
-				*/
-				onDragBegan: function ( /*x, y*/) {
-					oneFingerGestureAllowed = true;
-				},
-				onDragChanged: function (relativeX, relativeY, intersectionX, intersectionY) {
-					if (oneFingerGestureAllowed) {
-						/*
-								We recommend setting the entire translate property rather than its individual components
-								as the latter would cause several call to native, which can potentially lead to performance
-								issues on older devices. The same applied to the rotate and scale property.
-						*/
-						this.translate = {
-							x: intersectionX,
-							y: intersectionY
-						};
-					}
-				},
-				onDragEnded: function (x, y) {
-					/* React to the drag gesture ending. */
-				},
-				onRotationBegan: function (angleInDegrees) {
-					/* React to the rotation gesture beginning. */
-				},
-				onRotationChanged: function (angleInDegrees) {
-					this.rotate.z = rotationValues[labelIndex] - angleInDegrees;
-				},
-				onRotationEnded: function ( /*angleInDegrees*/) {
-					rotationValues[labelIndex] = this.rotate.z
-				},
-				onScaleBegan: function (scale) {
-					/* React to the scale gesture beginning. */
-				},
-				onScaleChanged: function (scale) {
-					var scaleValue = scaleValues[labelIndex] * scale;
-					this.scale = {
-						x: scaleValue,
-						y: scaleValue,
-						z: scaleValue
-					};
-				},
-				onScaleEnded: function ( /*scale*/) {
-					scaleValues[labelIndex] = this.scale.x;
-				},
-				onError: World.onError
-			});
 
-			video.onClick = function() {
-                selectedAug = this;
-				video.play();
-			};
 
-			video.uri = path;
 
-			allCurrentVideos.push(video);
-			World.lastAddedModel = video;
-			this.instantTrackable.drawables.addCamDrawable(video);
+    // RESET METHODS
+    // -------------
+    resetModels: function resetModelsFn() {
+        this.instantTrackable.drawables.removeCamDrawable(allCurrentModels);
+        this.instantTrackable.drawables.removeCamDrawable(allCurrentLabels);
+        this.instantTrackable.drawables.removeCamDrawable(allCurrentLinks);
+        this.instantTrackable.drawables.removeCamDrawable(allCurrentVideos);
 
-			console.log(video);
+        allCurrentModels = [];
+        allCurrentLabels = [];
+        allCurrentLinks = [];
+        allCurrentVideos = [];
+        World.resetAllModelValues();
+    },
 
-		}
-	},
+    resetAllModelValues: function resetAllModelValuesFn() {
+        rotationValues = [];
+        scaleValues = [];
+    },
+
+
+
+    // TARGET SAVE METHODS
+    // -------------------
+    saveCurrentInstantTarget: function saveCurrentInstantTargetFn() {
+        let name = prompt('Target name:');
+
+        var augmentations = [];
+
+        allCurrentModels.forEach(function (model) {
+            augmentations.push({
+                type: '3d',
+                uri: model.uri,
+                translate: model.translate,
+                rotate: model.rotate,
+                scale: model.scale
+            });
+        });
+
+        allCurrentLabels.forEach(function (label) {
+            augmentations.push({
+                type: 'label',
+                label: label
+            });
+        });
+
+        allCurrentLinks.forEach(function (link) {
+            augmentations.push({
+                type: 'link',
+                link: link.link,
+                url: link.url
+            });
+        });
+
+        allCurrentVideos.forEach(function (video) {
+            augmentations.push({
+                type: 'video',
+                uri: video.uri,
+                video: video
+            });
+        });
+
+        if (this.tracker.state === AR.InstantTrackerState.TRACKING) {
+            AR.platform.sendJSONObject({
+                action: "save_instant_target",
+                // action: "save_current_instant_target",
+                name: name,
+                augmentations: JSON.stringify(augmentations)
+            });
+        } else {
+            alert("Save instant target [" + name + "] is only available while tracking.")
+        }
+    },
+
+    /* Called from platform specific part of the sample. */
+    saveCurrentInstantTargetToUrl: function saveCurrentInstantTargetToUrlFn(url) {
+        console.log(url);
+        this.tracker.saveCurrentInstantTarget(url, function () {
+            alert("Saving target was successful");
+        }, function (error) {
+            alert("Saving failed: " + error);
+        })
+    },
+
+
+
+    // UTILITY METHODS
+    // ---------------
+    onError: function onErrorFn(error) {
+        alert(error)
+    },
+
+    showUserInstructions: function showUserInstructionsFn(message) {
+        document.getElementById('loadingMessage').innerHTML = message;
+    },
 
     isTracking: function isTrackingFn() {
         return (this.tracker.state === AR.InstantTrackerState.TRACKING);
@@ -584,110 +650,43 @@ var World = {
         scaleValues.push(defaultScaleValue);
     },
 
-    resetModels: function resetModelsFn() {
-        this.instantTrackable.drawables.removeCamDrawable(allCurrentModels);
-        this.instantTrackable.drawables.removeCamDrawable(allCurrentLabels);
-				this.instantTrackable.drawables.removeCamDrawable(allCurrentLinks);
-        this.instantTrackable.drawables.removeCamDrawable(allCurrentVideos);
 
-        allCurrentModels = [];
-        allCurrentLabels = [];
-				allCurrentLinks = [];
-        allCurrentVideos = [];
-        World.resetAllModelValues();
-    },
 
-    resetAllModelValues: function resetAllModelValuesFn() {
-        rotationValues = [];
-        scaleValues = [];
-    },
-
-    saveCurrentInstantTarget: function saveCurrentInstantTargetFn() {
-        let name = prompt('Target name:');
-
-        var augmentations = [];
-
-        allCurrentModels.forEach(function(model) {
-            augmentations.push({
-                type: '3d',
-                uri: model.uri,
-                translate: model.translate,
-                rotate: model.rotate,
-                scale: model.scale
-            });
-        });
-
-        allCurrentLabels.forEach(function(label) {
-            augmentations.push({
-								type: 'label',
-								label: label
-            });
-				});
-				
-				allCurrentLinks.forEach(function(link) {
-            augmentations.push({
-                type: 'link',
-								link: link.link,
-								url: link.url
-            });
-				});
-				
-				allCurrentVideos.forEach(function (video) {
-					augmentations.push({
-						type: 'video',
-						uri: video.uri,
-						video: video
-					});
-				});
-
-        if (this.tracker.state === AR.InstantTrackerState.TRACKING) {
-            AR.platform.sendJSONObject({
-                action: "save_instant_target",
-                // action: "save_current_instant_target",
-                name: name,
-                augmentations: JSON.stringify(augmentations)
-            });
-        } else {
-            alert("Save instant target ["+name+"] is only available while tracking.")
-        }
-    },
-
-    /* Called from platform specific part of the sample. */
-    saveCurrentInstantTargetToUrl: function saveCurrentInstantTargetToUrlFn(url) {
-				console.log(url);
-        this.tracker.saveCurrentInstantTarget(url, function() {
-            alert("Saving target was successful");
-        }, function(error) {
-            alert("Saving failed: " + error);
-        })
-    },
-
-    onError: function onErrorFn(error) {
-        alert(error)
-    },
-
-    showUserInstructions: function showUserInstructionsFn(message) {
-        document.getElementById('loadingMessage').innerHTML = message;
-    },
-
-    selectedRotateX: function(degrees) {
+    // AUGMENTATION CONTROL METHODS
+    // ----------------------------
+    selectedRotateX: function (degrees) {
         if (typeof selectedAug !== 'undefined') {
             selectedAug.rotate.x = parseInt(degrees);
         }
     },
-    selectedRotateY: function(degrees) {
+    selectedRotateY: function (degrees) {
         if (typeof selectedAug !== 'undefined') {
             selectedAug.rotate.y = parseInt(degrees);
-        }    
+        }
     },
-    selectedRotateZ: function(degrees) {
+    selectedRotateZ: function (degrees) {
         if (typeof selectedAug !== 'undefined') {
             selectedAug.rotate.z = parseInt(degrees);
         }
     },
-    selectedTranslateZ: function(degrees) {
+    selectedTranslateZ: function (degrees) {
         if (typeof selectedAug !== 'undefined') {
             selectedAug.translate.z = parseFloat(degrees);
+        }
+    },
+    selectedScale: function (factor) {
+        if (typeof selectedAug !== 'undefined') {
+            selectedAug.scale = {
+                x: parseFloat(factor),
+                y: parseFloat(factor),
+                z: parseFloat(factor)
+            };
+        }
+
+    },
+    selectedDestroy: function() {
+        if (typeof selectedAug !== 'undefined') {
+            selectedAug.destroy();
         }
     }
 };

@@ -82,7 +82,6 @@ var World = {
           });
         });
     },
-
     /* Called from platform specific part */
     loadExistingInstantTargetFromUrl: function loadExistingInstantTargetFromUrlFn(url, augmentations) {
         var mapResource = new AR.TargetCollectionResource(url);
