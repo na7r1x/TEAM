@@ -19,6 +19,26 @@ AR.context.on2FingerGestureStarted = function () {
     oneFingerGestureAllowed = false;
 };
 
+function rgba2hex(orig) {
+    var a, isPercent,
+        rgb = orig.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i),
+        alpha = (rgb && rgb[4] || "").trim(),
+        hex = rgb ?
+        (rgb[1] | 1 << 8).toString(16).slice(1) +
+        (rgb[2] | 1 << 8).toString(16).slice(1) +
+        (rgb[3] | 1 << 8).toString(16).slice(1) : orig;
+
+    if (alpha !== "") {
+        a = alpha;
+    } else {
+        a = 01;
+    }
+    // multiply before convert to HEX
+    a = ((a * 255) | 1 << 8).toString(16).slice(1)
+    hex = hex + a;
+
+    return hex;
+}
 
 // WORLD INIT 
 // ----------
@@ -48,6 +68,22 @@ var World = {
         AR.platform.sendJSONObject({
             action: "get_saved_videos"
         });
+
+        // INIT COLOUR PICKERS
+        $("#aug-text-color").spectrum({
+            preferredFormat: 'rgb',
+            showPalette: true,
+            showAlpha: true
+        });
+        $("#aug-background-color").spectrum({
+            preferredFormat: 'rgb',
+            showPalette: true,
+            showAlpha: true
+        });
+        setTimeout(function(){
+            $('#aug-color-container .ui-input-text').css('display', 'none');
+            $('.sp-replacer').css('margin', '0.5em');
+        }, 200);
     },
 
     createOverlays: function createOverlaysFn() {
@@ -82,6 +118,7 @@ var World = {
                     $('#aug-controls').css('display', 'none');
                     $('#deleteButton').css('display', 'none');
                     $('#tracking-controls').css('display', 'flex');
+                    $('#aug-color-container').css('display', 'none')
                 } else {
                     els.forEach(function (element) {
                         element.classList.remove("image-button-inactive");
@@ -288,6 +325,7 @@ var World = {
                 },
                 onClick: function () {
                     selectedAug = this;
+                    $('#aug-color-container').css('display', 'none');
                 },
                 onError: World.onError
             });
@@ -307,7 +345,7 @@ var World = {
                 offsetY: 1,
                 onClick: function (l) {
                     selectedAug = this;
-
+                    $('#aug-color-container').css('display', 'block');
                 },
                 rotate: {
                     tilt: -90
@@ -374,6 +412,7 @@ var World = {
                 onClick: function (l) {
                     selectedAug = this;
                     AR.context.openInBrowser(url);
+                    $('#aug-color-container').css('display', 'block');
                 },
                 rotate: {
                     tilt: -90
@@ -498,6 +537,7 @@ var World = {
 
             video.onClick = function () {
                 selectedAug = this;
+                $('#aug-color-container').css('display', 'none');
                 video.play();
             };
 
@@ -650,6 +690,8 @@ var World = {
         scaleValues.push(defaultScaleValue);
     },
 
+    
+
 
 
     // AUGMENTATION CONTROL METHODS
@@ -683,6 +725,20 @@ var World = {
             };
         }
 
+    },
+    selectedFontColor: function (rgba) {
+        if (typeof selectedAug !== 'undefined') {
+            var hex = rgba2hex(rgba);
+            // console.log(hex);
+            selectedAug.style.textColor = '#'+hex;
+        }
+    },
+    selectedBackgroundColor: function (rgba) {
+        if (typeof selectedAug !== 'undefined') {
+            var hex = rgba2hex(rgba);
+            // console.log(hex);
+            selectedAug.style.backgroundColor = '#'+hex;
+        }
     },
     selectedDestroy: function() {
         if (typeof selectedAug !== 'undefined') {

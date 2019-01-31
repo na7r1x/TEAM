@@ -23,6 +23,10 @@
     <script type="text/javascript" src="jquery/jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="jquery/jquery.mobile-1.3.2.min.js"></script>
 
+    <!-- SPECTRUM COLOUR PICKER -->
+    <script src='js/spectrum.js'></script>
+    <link rel='stylesheet' href='js/spectrum.css' />
+
     <!-- Icons made by https://www.flaticon.com/authors/vectors-market"
     from https://www.flaticon.com/" licensed by http://creativecommons.org/licenses/by/3.0/" -->
 </head>
@@ -67,7 +71,7 @@
             <!-- SCALE SLIDER -->
             <div id="aug-scale-slider-container" class="table-container">
                 <label for="aug-scale-slider" class="table-cell">Scale:</label>
-                <input id="aug-scale-slider" class="table-cell" name="aug-scale-slider" type="range" min="0.0" value="0" max="0.5" step="0.001"
+                <input id="aug-scale-slider" class="table-cell" name="aug-scale-slider" type="range" min="0.0" value="0" max="2" step="0.001"
                 onchange="World.selectedScale(value)" data-mini="true">
             </div>
             <!-- PLANE Z-axis SLIDER -->
@@ -76,6 +80,7 @@
                 <input id="aug-tZ-slider" class="table-cell" name="aug-tZ-slider" type="range" min="-3" value="0" max="3" 
                     step="0.01" onchange="World.selectedTranslateZ(value)" data-mini="true">
             </div>
+            
         </div>
         <!-- CONTROL BUTTON -->
         <div class="container">
@@ -86,6 +91,15 @@
 
     <div id="tracking-controls-container-lower-1">
       <!-- PLACEHOLDER FOR SECOND ROW OF BUTTON CONTROLS -->
+        <div id="aug-color-container" class="table-container">
+            <!-- <label for="aug-text-color" class="table-cell">Text Colour:</label> -->
+            <input id="aug-text-color" class="table-cell" name="aug-text-color" type="text" onchange="World.selectedFontColor(value)">
+        <!-- </div> -->
+        <!-- <div id="aug-background-color-container" class="table-container"> -->
+            <!-- <label for="aug-background-color" class="table-cell">Background Colour:</label> -->
+            <input id="aug-background-color" class="table-cell" name="aug-background-color" type="text" onchange="World.selectedBackgroundColor(value)"
+                data-mini="true">
+        </div>
     </div>
     <!-- AUGMENTATIONS PALETTE -->
     <div id="tracking-controls-container-lower-2">
