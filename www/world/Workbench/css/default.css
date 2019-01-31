@@ -53,6 +53,15 @@ body {
     display: table;
 }
 
+.table-container > label {
+    max-width: 0.7em !important;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+}
+
 .table-cell {
     display: table-cell!important;
     vertical-align: middle;
