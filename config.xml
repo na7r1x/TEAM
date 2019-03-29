@@ -30,6 +30,7 @@
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
     <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,root" />
     <plugin name="cordova-plugin-streaming-media" spec="https://github.com/nchutchind/cordova-plugin-streaming-media" />
+    <plugin name="cordova-plugin-audio-recorder" spec="^1.1.0" />
     <engine name="android" spec="^7.1.1" />
     <engine name="browser" spec="^5.0.4" />
 </widget>

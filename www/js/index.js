@@ -336,6 +336,18 @@ var app = {
         }
     },
 
+    deleteAudioFile: function (audio) {
+        if (confirm('Delete [' + audio + ']. Are you sure?')) {
+            window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + 'audio/', function (fileSystem) {
+                fileSystem.getFile(audio, null, function (fileEntry) {
+                    fileEntry.remove(function (file) {
+                        alert("audio file removed successfully!");
+                    }, app.deleteError);
+                }, app.deleteError);
+            }, app.deleteError);
+        }
+    },
+
 
 
 
@@ -438,7 +450,51 @@ var app = {
     },
 
 
+    getAudioFiles: function getAudioFilesFn() {
 
+        function onFileSystemSuccess(fileSystem) {
+            var directoryEntry = fileSystem;
+            directoryEntry.getDirectory("audio", {
+                create: true,
+                exclusive: false
+            }, onDirectorySuccess, onDirectoryFail);
+            // onDirectorySuccess(fileSystem);
+        }
+
+        function onDirectorySuccess(parent) {
+            var directoryReader = parent.createReader();
+            directoryReader.readEntries(success, fail);
+        }
+
+        function fail(error) {
+            alert("Failed to list directory contents: " + error.code);
+        }
+
+        function success(entries) {
+            if (entries.length == 0)
+                alert("No audio files.");
+            else {
+                for (var i = 0; i < entries.length; i++) {
+                    entries[i].file(function (file) {
+                        console.log("file.name " + file.name);
+                        // $('#targets').append("<li><a href=''>"+file.name+"</a></li>").listview('refresh');
+                        $('#audiofiles').append("<li><a href='#' name='" + file.name + "' onclick='app.playAudio(name)'>" + file.name + "</a><a href='#' id='" + file.name + "' onclick='app.deleteAudioFile(id)'>Delete</a></li>").listview('refresh');
+                    })
+                }
+            }
+            // alert('file list created');
+        }
+
+        function onDirectoryFail(error) {
+            alert("Unable to create new directory: " + error.code);
+        }
+
+        function onFileSystemFail(evt) {
+            alert(evt.target.error.code);
+        }
+
+        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, onFileSystemSuccess, onFileSystemFail);
+    },
 
 
 
@@ -494,6 +550,7 @@ var app = {
             for (i = 0, len = mediaFiles.length; i < len; i += 1) {
                 path = mediaFiles[i].fullPath;
                 moveFile(path);
+                console.log(path);
             }
             console.log(mediaFiles);
         };
@@ -522,8 +579,85 @@ var app = {
             // orientation: 'landscape'
         };
         window.plugins.streamingMedia.playVideo(path, options);
-    }
+    },
+
+
+
+    // AUDIO RELATED METHODS
+    // --------------------
+
+    captureAudio: function captureAudioFn() {
+            var errorCallback = function (e) {
+                console.log(e);
+            }
+
+            var successCallback = function () {
+                alert('File saved successfully!');
+            }
+
+            var moveFile = function (fileUri) {
+                window.resolveLocalFileSystemURL(
+                    fileUri,
+                    function (fileEntry) {
+                        var newFileUri = cordova.file.externalDataDirectory;
+                        var oldFileUri = fileUri;
+                        var fileExt = "." + oldFileUri.split('.')[oldFileUri.split('.').length-1];
+                        var ts = Math.round((new Date()).getTime() / 1000);
+                        var name = prompt('Audio file name:');
+                        if (name) {
+                            var newFileName = name + '-' + ts + fileExt;
+                            window.resolveLocalFileSystemURL(newFileUri,
+                                function (fs) {
+                                    fs.getDirectory('audio/', {
+                                            create: true,
+                                            exclusive: false
+                                        },
+                                        function (dirEntry) {
+                                            fileEntry.moveTo(dirEntry, newFileName, successCallback, errorCallback('failed to move file'));
+                                        },
+                                        errorCallback('failed getting dir audio')
+                                    );
+                                },
+                                errorCallback('new path resolve failed')
+                            );
+                        } else {
+                            errorCallback('undefined file name');
+                        }
+                    },
+                    errorCallback('filesystem resolve failed')
+                );
+            }
+
+            // capture callback
+            var captureSuccess = function (mediaFile) {
+                mediaFile = JSON.parse(mediaFile);
+                console.log(mediaFile.full_path);
+                moveFile('file://' + mediaFile.full_path);
+            };
+
+            // capture error callback
+            var captureError = function (error) {
+                navigator.notification.alert('Error code: ' + error.code, null, 'Capture Error');
+            };
+
+            // start video capture
+            navigator.device.audiorecorder.recordAudio(captureSuccess, captureError, 60);
+        },
+
+        playAudio: function playVideoFn(videoname) {
+            var path = cordova.file.externalDataDirectory + "audio/" + videoname;
+            var options = {
+                successCallback: function () {
+                    console.log("Audio was closed without error.");
+                },
+                errorCallback: function (errMsg) {
+                    console.log("Error! " + errMsg);
+                }
+                // orientation: 'landscape'
+            };
+            window.plugins.streamingMedia.playAudio(path, options);
+        }
     // --- End Wikitude Plugin ---
-};
+    };
 
 app.initialize();
