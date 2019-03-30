@@ -10,6 +10,7 @@ var allCurrentModels = [];
 var allCurrentLabels = [];
 var allCurrentLinks = [];
 var allCurrentVideos = [];
+var allCurrentSounds = [];
 
 var selectedAug;
 
@@ -67,6 +68,9 @@ var World = {
         World.createOverlays();
         AR.platform.sendJSONObject({
             action: "get_saved_videos"
+        });
+        AR.platform.sendJSONObject({
+            action: "get_saved_audioFiles"
         });
 
         // INIT COLOUR PICKERS
@@ -193,15 +197,6 @@ var World = {
         document.getElementById("tracking-model-button-couch").addEventListener('touchstart', function ( /*ev*/ ) {
             World.requestedModel = 1;
         }, false);
-        // document.getElementById("tracking-model-button-chair").addEventListener('touchstart', function( /*ev*/ ) {
-        //     World.requestedModel = 2;
-        // }, false);
-        // document.getElementById("tracking-model-button-table").addEventListener('touchstart', function( /*ev*/ ) {
-        //     World.requestedModel = 3;
-        // }, false);
-        // document.getElementById("tracking-model-button-trainer").addEventListener('touchstart', function( /*ev*/ ) {
-        //     World.requestedModel = 4;
-        // }, false);
         document.getElementById("tracking-model-button-label").addEventListener('touchstart', function ( /*ev*/ ) {
             World.requestedModel = 5;
         }, false);
@@ -212,6 +207,9 @@ var World = {
             $("#selectVideo").selectmenu("open");
 
             // World.requestedModel = 7;
+        }, false);
+        document.getElementById("tracking-model-button-sound").addEventListener('click', function ( /*ev*/ ) {
+            $("#selectAudio").selectmenu("open");
         }, false);
     },
 
@@ -552,6 +550,92 @@ var World = {
         }
     },
 
+    addAudio: function addAudioFn(path, xpos, ypos) {
+        console.log('addVideo triggered');
+        if (World.isTracking()) {
+            var labelIndex = rotationValues.length;
+            World.addModelValues();
+            
+            html = '';
+            html += '<div class="play" id="btn1">play</div>'
+            html+= '<audio preload="none" src="'+path+'" id="sound1"></audio>'
+            html += '<link rel="stylesheet" href="file:///android_asset/www/css/audioplayer.css">'
+            html+= '<script src="file:///android_asset/www/js/jquery.min.js"></script>'
+            html += '<script src="file:///android_asset/www/js/audioplayer.js"></script>'
+
+            var audio = new AR.HtmlDrawable({html: html}, 1, {
+                clickThroughEnabled: true,
+                viewportHeight: 100,
+                viewportWidth: 100,
+                offsetY: 0,
+                // onClick: function (l) {
+                // 	l.play();
+                // },
+                rotate: {
+                    // tilt: -90
+                    // roll: 90
+                },
+                style: {
+                    backgroundColor: '#cccccc'
+                },
+                onDragBegan: function ( /*x, y*/ ) {
+                    oneFingerGestureAllowed = true;
+                },
+                onDragChanged: function (relativeX, relativeY, intersectionX, intersectionY) {
+                    if (oneFingerGestureAllowed) {
+                        // Setting all three values of translate/scale/rotate at once is more efficient 
+                        this.translate = {
+                            x: intersectionX,
+                            y: intersectionY
+                        };
+                    }
+                },
+                onDragEnded: function (x, y) {
+                    /* React to the drag gesture ending. */
+                },
+                onRotationBegan: function (angleInDegrees) {
+                    /* React to the rotation gesture beginning. */
+                },
+                onRotationChanged: function (angleInDegrees) {
+                    this.rotate.z = rotationValues[labelIndex] - angleInDegrees;
+                },
+                onRotationEnded: function ( /*angleInDegrees*/ ) {
+                    rotationValues[labelIndex] = this.rotate.z
+                },
+                onScaleBegan: function (scale) {
+                    /* React to the scale gesture beginning. */
+                },
+                onScaleChanged: function (scale) {
+                    var scaleValue = scaleValues[labelIndex] * scale;
+                    this.scale = {
+                        x: scaleValue,
+                        y: scaleValue,
+                        z: scaleValue
+                    };
+                },
+                onScaleEnded: function ( /*scale*/ ) {
+                    scaleValues[labelIndex] = this.scale.x;
+                },
+                onError: World.onError
+            });
+
+            audio.onClick = function () {
+                selectedAug = this;
+                $('#aug-color-container').css('display', 'none');
+                audio.play();
+            };
+
+            // video.uri = path;
+
+            allCurrentSounds.push(audio);
+            World.lastAddedModel = audio;
+            this.instantTrackable.drawables.addCamDrawable(audio);
+
+            console.log(audio);
+
+        }
+    },
+
 
     // NATIVE GETTERS
     // --------------
@@ -574,6 +658,33 @@ var World = {
             for (var i = 0; i < data.length; i++) {
                 console.log("file.name " + data[i].name);
                 $('#selectVideo').append("<option value='" + data[i].name + "'>" + data[i].name + "</li>").selectmenu('refresh');
+                // $('#select').append("<input type='radio' name='load' id='" + data[i].name + "' value='" + data[i].name +"'><label for='"+data[i].name+"'>"+data[i].name+"</label>");
+            }
+            // $('#select').trigger('change');
+            // $('input[type=radio]').checkboxradio().trigger('create');
+            // $('a.ui-btn').button().trigger('create');
+        }
+    },
+
+    getAudioFile: function getAudioFileFn(audioname, xPos, yPos) {
+        AR.platform.sendJSONObject({
+            action: "get_audio_absolute_path",
+            name: audioname,
+            xPos: 1,
+            yPos: 1
+        });
+        $("#selectAudio").selectmenu("close");
+
+    },
+
+    getAudioFiles: function getAudioFilesFn(data) {
+        console.log(data);
+        if (data.length === 0) {
+
+        } else {
+            for (var i = 0; i < data.length; i++) {
+                console.log("file.name " + data[i].name);
+                $('#selectAudio').append("<option value='" + data[i].name + "'>" + data[i].name + "</li>").selectmenu('refresh');
                 // $('#select').append("<input type='radio' name='load' id='" + data[i].name + "' value='" + data[i].name +"'><label for='"+data[i].name+"'>"+data[i].name+"</label>");
             }
             // $('#select').trigger('change');
@@ -644,6 +755,14 @@ var World = {
                 type: 'video',
                 uri: video.uri,
                 video: video
+            });
+        });
+
+        allCurrentSounds.forEach(function (html) {
+            augmentations.push({
+                type: 'html',
+                html: html.html,
+                object: html
             });
         });
 

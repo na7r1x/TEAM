@@ -106,6 +106,7 @@
         <input id="tracking-start-stop-button" class="image-button" type="image" src="assets/buttons/start.png"
                onclick="World.changeTrackerState()"/>
         <div id="tracking-controls-container-lower-spacing"></div>
+        <input id="tracking-model-button-sound" class="model-button image-button image-button-inactive" type="image"src="assets/buttons/mic.png" />
         <input id="tracking-model-button-video" class="model-button image-button image-button-inactive" type="image" src="assets/buttons/video.png" />
         <input id="tracking-model-button-link" class="model-button image-button image-button-inactive" type="image" src="assets/buttons/link.png" />
         <input id="tracking-model-button-label" class="model-button image-button image-button-inactive" type="image" src="assets/buttons/text.png" />
@@ -122,6 +123,15 @@
     
         <!-- <a href="#dialogPage" data-rel="dialog" data-role="button" data-icon="search">Load Target</a> -->
     
+    </div>
+
+    <!-- AUDIO SELECTION POPUP -->
+    <div data-role="fieldcontain" style="display:none;">
+        <select name="select-audio" id="selectAudio" data-native-menu="false" onchange="World.getAudioFile(value)">
+        </select>
+
+        <!-- <a href="#dialogPage" data-rel="dialog" data-role="button" data-icon="search">Load Target</a> -->
+
     </div>
 
 

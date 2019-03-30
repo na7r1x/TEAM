@@ -124,6 +124,15 @@ var World = {
                         newDrawable.play();
                     };
                     World.drawables.push(newDrawable);
+                } else if (model.type === 'html') {
+                    model.object.height = 1;
+                    console.log(model);
+                    newDrawable = new AR.HtmlDrawable({html:model.html}, model.object.height, model.object);
+                    newDrawable.clickThroughEnabled = true;
+                    newDrawable.onClick = function () {
+                        console.log(newDrawable);
+                    };
+                    World.drawables.push(newDrawable);
                 }
             });
             World.instantTrackable.drawables.addCamDrawable(World.drawables);

@@ -1,1 +1,1 @@
-{"plugins":["cordova-plugin-whitelist","com.wikitude.phonegap.WikitudePlugin","cordova-plugin-file","cordova-plugin-dialogs","cordova-plugin-media-capture","cordova-plugin-streaming-media"]}
+{"plugins":["cordova-plugin-whitelist","com.wikitude.phonegap.WikitudePlugin","cordova-plugin-file","cordova-plugin-dialogs","cordova-plugin-media-capture","cordova-plugin-streaming-media","cordova-plugin-audio-recorder"]}

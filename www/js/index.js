@@ -149,6 +149,9 @@ var app = {
             } else if (jsonObject.action === "get_video_absolute_path") {
                 var path = cordova.file.externalDataDirectory + "videos/" + jsonObject.name;
                 app.wikitudePlugin.callJavaScript("World.addVideo('" + path + "', 0, 0);");
+            } else if (jsonObject.action === "get_audio_absolute_path") {
+                var path = cordova.file.externalDataDirectory + "audio/" + jsonObject.name;
+                app.wikitudePlugin.callJavaScript("World.addAudio('" + path + "', 0, 0);");
             } else if (jsonObject.action === "save_current_instant_target") {
                 window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (fileSystem) {
                     fileSystem.getFile("SavedAugmentations.json", {
@@ -246,6 +249,27 @@ var app = {
                                 // alert(videos);
                                 console.log(videos);
                                 app.wikitudePlugin.callJavaScript("World.getVideos(" + JSON.stringify(videos) + ");");
+                            }
+                        }, app.loadError);
+                    }, app.loadError);
+                }, app.loadError);
+            } else if (jsonObject.action === "get_saved_audioFiles") {
+                // alert('received json')
+                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (fileSystem) {
+                    // var directoryEntry = fileSystem;
+                    // directoryEntry.getDirectory("targets", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
+                    fileSystem.getDirectory('audio', {
+                        create: true,
+                        exclusive: false
+                    }, function (dir) {
+                        var directoryReader = dir.createReader();
+                        directoryReader.readEntries(function (audioFiles) {
+                            if (audioFiles.length == 0)
+                                alert("No audio files.");
+                            else {
+                                // alert(videos);
+                                console.log(audioFiles);
+                                app.wikitudePlugin.callJavaScript("World.getAudioFiles(" + JSON.stringify(audioFiles) + ");");
                             }
                         }, app.loadError);
                     }, app.loadError);
