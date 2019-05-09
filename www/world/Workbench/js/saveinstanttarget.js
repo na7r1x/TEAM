@@ -12,6 +12,8 @@ var allCurrentLinks = [];
 var allCurrentVideos = [];
 var allCurrentSounds = [];
 
+var selectionMarker;
+
 var selectedAug;
 
 var oneFingerGestureAllowed = false;
@@ -87,6 +89,7 @@ var World = {
         setTimeout(function(){
             $('#aug-color-container .ui-input-text').css('display', 'none');
             $('.sp-replacer').css('margin', '0.5em');
+            World.createSelectionMarker();
         }, 200);
     },
 
@@ -190,6 +193,29 @@ var World = {
         World.setupEventListeners()
     },
 
+    // testing highlighting selected augmentations
+    createSelectionMarker: function createSelectionMarkerFn() {
+        // if (selectionMarker === undefined) {
+        //     var circle = new AR.Circle(0.1, {
+        //         enabled: false,
+        //         style: {
+        //             fillColor: '#2BA4EF'
+        //         }
+        //     });
+        //     selectionMarker = circle;
+        //     console.log(selectionMarker);
+        //     this.instantTrackable.drawables.addCamDrawable(circle);
+        // }
+    },
+
+    // repositionSelectionMarker: function repositionSelectionMarkerFn(xPos, yPos) {
+    //     selectionMarker.enabled = true;
+    //     selectionMarker.translate = {
+    //         x: xPos,
+    //         y: yPos
+    //     };
+    // },
+
     setupEventListeners: function setupEventListenersFn() {
         document.getElementById("tracking-model-button-clock").addEventListener('touchstart', function ( /*ev*/ ) {
             World.requestedModel = 0;
@@ -204,12 +230,10 @@ var World = {
             World.requestedModel = 6;
         }, false);
         document.getElementById("tracking-model-button-video").addEventListener('click', function ( /*ev*/ ) {
-            $("#selectVideo").selectmenu("open");
-
-            // World.requestedModel = 7;
+            $("#popupMenuVideo").popup("open");
         }, false);
         document.getElementById("tracking-model-button-sound").addEventListener('click', function ( /*ev*/ ) {
-            $("#selectAudio").selectmenu("open");
+            $("#popupMenuAudio").popup("open");
         }, false);
     },
 
@@ -228,12 +252,7 @@ var World = {
                 World.requestedModel = -1;
                 World.initialDrag = true;
             }
-            // else if (World.requestedModel === 7) {
-            // 		// World.getVideo("default", xPos, yPos);
-            // 		$('#select').trigger('focus');
-            // 		World.requestedModel = -1;
-            // 		World.initialDrag = true;
-            // } 
+
             else {
                 World.addModel(World.requestedModel, xPos, yPos);
                 World.requestedModel = -1;
@@ -293,6 +312,7 @@ var World = {
                             x: intersectionX,
                             y: intersectionY
                         };
+                        // World.repositionSelectionMarker(intersectionX,intersectionY);
                     }
                 },
                 onDragEnded: function (x, y) {
@@ -343,7 +363,7 @@ var World = {
                 offsetY: 1,
                 onClick: function (l) {
                     selectedAug = this;
-                    $('#aug-color-container').css('display', 'block');
+                    // $('#aug-color-container').css('display', 'block');
                 },
                 rotate: {
                     tilt: -90
@@ -361,6 +381,8 @@ var World = {
                             y: intersectionY
                         };
                     }
+                    // World.repositionSelectionMarker(intersectionX, intersectionY);
+
                 },
                 onDragEnded: function (x, y) {
                     /* React to the drag gesture ending. */
@@ -427,6 +449,7 @@ var World = {
                             x: intersectionX,
                             y: intersectionY
                         };
+                        // World.repositionSelectionMarker(intersectionX, intersectionY);
                     }
                 },
                 onDragEnded: function (x, y) {
@@ -473,7 +496,7 @@ var World = {
     },
 
     addVideo: function addVideoFn(path, xpos, ypos) {
-        console.log('addVideo triggered');
+        // console.log('addVideo triggered');
         // console.log(xpos);
         // console.log(ypos);
         if (World.isTracking()) {
@@ -502,6 +525,7 @@ var World = {
                             x: intersectionX,
                             y: intersectionY
                         };
+                        // World.repositionSelectionMarker(intersectionX, intersectionY);
                     }
                 },
                 onDragEnded: function (x, y) {
@@ -588,6 +612,7 @@ var World = {
                             x: intersectionX,
                             y: intersectionY
                         };
+                        // World.repositionSelectionMarker(intersectionX, intersectionY);
                     }
                 },
                 onDragEnded: function (x, y) {
@@ -621,11 +646,9 @@ var World = {
 
             audio.onClick = function () {
                 selectedAug = this;
-                $('#aug-color-container').css('display', 'none');
+                // $('#aug-color-container').css('display', 'none');
                 audio.play();
             };
-
-            // video.uri = path;
 
             allCurrentSounds.push(audio);
             World.lastAddedModel = audio;
@@ -646,23 +669,21 @@ var World = {
             xPos: 1,
             yPos: 1
         });
-        $("#selectVideo").selectmenu("close");
+        $("#popupMenuVideo").popup("close");
 
     },
 
     getVideos: function getVideosFn(data) {
         console.log(data);
         if (data.length === 0) {
-
+            // do nothing (for now)
         } else {
-            for (var i = 0; i < data.length; i++) {
-                console.log("file.name " + data[i].name);
-                $('#selectVideo').append("<option value='" + data[i].name + "'>" + data[i].name + "</li>").selectmenu('refresh');
-                // $('#select').append("<input type='radio' name='load' id='" + data[i].name + "' value='" + data[i].name +"'><label for='"+data[i].name+"'>"+data[i].name+"</label>");
+            var onclickCallback = function() {
+                $('#selectVideo').trigger('change');
             }
-            // $('#select').trigger('change');
-            // $('input[type=radio]').checkboxradio().trigger('create');
-            // $('a.ui-btn').button().trigger('create');
+            for (var i = 0; i < data.length; i++) {
+                $('#selectVideo').append("<li><a href='#' onclick=\"World.getVideo(\'" + data[i].name + "\')\">"+ data[i].name +"</a></li>").listview('refresh');
+            }
         }
     },
 
@@ -673,23 +694,19 @@ var World = {
             xPos: 1,
             yPos: 1
         });
-        $("#selectAudio").selectmenu("close");
+        $("#popupMenuAudio").popup("close");
 
     },
 
     getAudioFiles: function getAudioFilesFn(data) {
         console.log(data);
         if (data.length === 0) {
-
+            // do nothing (for now)
         } else {
             for (var i = 0; i < data.length; i++) {
                 console.log("file.name " + data[i].name);
-                $('#selectAudio').append("<option value='" + data[i].name + "'>" + data[i].name + "</li>").selectmenu('refresh');
-                // $('#select').append("<input type='radio' name='load' id='" + data[i].name + "' value='" + data[i].name +"'><label for='"+data[i].name+"'>"+data[i].name+"</label>");
+                $('#selectAudio').append("<li><a href='#' onclick=\"World.getAudioFile(\'" + data[i].name + "\')\">" + data[i].name + "</a></li>").listview('refresh');
             }
-            // $('#select').trigger('change');
-            // $('input[type=radio]').checkboxradio().trigger('create');
-            // $('a.ui-btn').button().trigger('create');
         }
     },
 
@@ -778,7 +795,7 @@ var World = {
         }
     },
 
-    /* Called from platform specific part of the sample. */
+    /* Called from platform specific part of the world. */
     saveCurrentInstantTargetToUrl: function saveCurrentInstantTargetToUrlFn(url) {
         console.log(url);
         this.tracker.saveCurrentInstantTarget(url, function () {

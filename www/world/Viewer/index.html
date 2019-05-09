@@ -26,46 +26,14 @@
 
 <body>
 <div data-role="page" id="mainPage" style="background: none;">
-
     <div id="top-wrapper">
-        <!-- <div id="loadingMessage" class="info"></div> -->
-
-        <!-- <input class="image-button" type="image" src="assets/buttons/load.png"
-               onclick="World.loadExistingInstantTarget()"> -->
-
-       <!-- <fieldset data-role="controlgroup" data-type="horizontal">
-          <label for="select-more-1a" class="ui-hidden-accessible">Tracker</label>
-          <select name="select-more-1a" id="select" onchange="World.loadExistingInstantTarget(value)">
-          </select>
-          <button data-icon="search" data-iconpos="notext">Search</button>
-       </fieldset> -->
-
       <div data-role="fieldcontain">
         <select name="select-choice-1" id="select" data-native-menu="true" onchange="World.loadExistingInstantTarget(value)">
+          <!-- List is populated here -->
         </select>
-
-        <!-- <a href="#dialogPage" data-rel="dialog" data-role="button" data-icon="search">Load Target</a> -->
-
       </div>
-
-
     </div>
 </div>
-
-<!-- <div data-role="page" id="dialogPage">
-  <div data-role="header" data-theme="d">
-    <h2>Dialog</h2>
-  </div>
-  <div data-role="content" data-theme="d" role="main" style="background-color:#fff;">
-    <form>
-      <fieldset data-role="controlgroup" id="select">
-          <legend>Select targets to load:</legend>
-      </fieldset>
-    </form>
-        <a href="#mainPage" data-role='button' onclick="history.go(-1);">Cancel</a>
-        <a href="#mainPage" data-role='button' data-theme="c"  data-transition="flow" id="loadBtn" onclick="World.loadExistingInstantTargets();history.go(-1);">Load</a>
-  </div>
-</div> -->
 
 <script src="js/loadinstanttarget.js"></script>
 <script type="text/javascript">

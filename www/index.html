@@ -1,22 +1,4 @@
 <!DOCTYPE html>
-<!--
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-     KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
--->
 <html>
 
 <head>
@@ -27,74 +9,101 @@
   <link rel="stylesheet" type="text/css" href="css/index.css" />
 
   <!-- jQuery JS & CSS -->
-  <link rel="stylesheet" href="jquery/jquery.mobile-1.3.2.min.css" />
+  <link rel="stylesheet" href="jquery/jquery.mobile-1.4.5.css" />
+  <link rel="stylesheet" href="jquery/jquery.mobile.icons-1.4.5.css" />
+  <link rel="stylesheet" href="jquery/jquery.mobile.structure-1.4.5.css" />
   <script src="jquery/jquery-1.9.1.min.js"></script>
-  <script src="jquery/jquery.mobile-1.3.2.min.js"></script>
+  <script src="jquery/jquery.mobile-1.4.5.js"></script>
+  <script>
+    $(function () {
+      $("[data-role='navbar']").navbar();
+      $("[data-role='header'], [data-role='footer']").toolbar();
+    });
+  </script>
 </head>
 
 <body>
   <!-- LOAD SCRIPTS -->
   <script type="text/javascript" src="cordova.js"></script>
-  <script type="text/javascript" src="js/sampleIndices.js"></script>
+  <script type="text/javascript" src="js/worldIndices.js"></script>
   <script type="text/javascript" src="js/index.js"></script>
 
-  <!-- MAIN -->
-  <div data-role="page" id="page1" style="background: none;">
-
-    <a href="javascript:app.showBuildInformation();">
-      <div id="header-status" data-role="header" data-position="fixed" data-theme="a">
-        <h2>Workbench</h2>
-      </div>
-    </a>
-
-    <!-- CREATE PANEL -->
-    <div data-role="collapsible" data-collapsed="false" data-theme="e" data-content-theme="d">
-      <h4>Create Model</h4>
-      <div data-role="fieldcontain">
-        <input type="button" value="New Model" id="create-button" data-icon="edit" />
-      </div>
+  <!-- <a href="javascript:app.showBuildInformation();"> -->
+    <div id="header-status" data-role="header" data-position="fixed" >
+      <h2>PETA AR Authoring Tool</h2>
     </div>
+  <!-- </a> -->
+  <div data-role="page">
 
-    <!-- VIEW PANEL -->
-    <div data-role="collapsible" data-collapsed="false" data-theme="e" data-content-theme="d">
-      <h4>Viewer</h4>
-      <div data-role="fieldcontain">
-        <input type="button" value="Open Viewer" id="viewer-button" data-icon="search" />
+    <div data-role="tabs">
+      <div data-role="footer" class="ui-state-persist" data-position="fixed">
+        <div data-role="navbar" >
+          <ul>
+            <li class="ui-button-active"><a href="#main" data-ajax="false" data-icon="home">Main</a> </li>
+            <li><a href="#audio" data-ajax="false" data-icon="audio">Audio</a></li>
+            <li><a href="#video" data-ajax="false" data-icon="video" >Video</a></li>
+          </ul>
+        </div>
       </div>
-      <ul data-role="listview" id="targets" data-split-icon="delete" data-split-theme="a" data-inset="false">
-      </ul>
-      <div data-role="fieldcontain">
-        <input type="button" value="Refresh List" id="refresh-targets-button" data-icon="refresh" />
+      <div id="main" class="ui-content">
+           
+        <!-- CREATE PANEL -->
+        <div data-role="collapsible" data-collapsed="false" data-content-theme="a">
+          <h4>Create Model</h4>
+          <div data-role="fieldcontain">
+            <input type="button" value="New Model" id="create-button" data-icon="edit" />
+          </div>
+        </div>
+
+        <!-- VIEW PANEL -->
+        <div data-role="collapsible" data-collapsed="false" data-content-theme="a">
+          <h4>Viewer</h4>
+          <div data-role="fieldcontain">
+            <input type="button" value="Open Viewer" id="viewer-button" data-icon="search" />
+          </div>
+          <ul data-role="listview" id="targets" data-split-icon="delete" data-split-theme="a" data-inset="false">
+          </ul>
+          <div data-role="fieldcontain">
+            <input type="button" value="Refresh List" id="refresh-targets-button" data-icon="refresh" />
+          </div>
+        </div>
+            
       </div>
+
+      <div id="audio" class="ui-content">
+        
+        <!-- AUDIO PANEL -->
+        <div data-role="collapsible" data-collapsed="false"  data-content-theme="a">
+          <h4>Audio Recordings</h4>
+          <div data-role="fieldcontain">
+            <input type="button" value="Capture Audio" id="capture-audio-button" data-icon="plus" />
+          </div>
+          <ul data-role="listview" id="audiofiles" data-split-icon="delete" data-split-theme="a" data-inset="false">
+          </ul>
+          <div data-role="fieldcontain">
+            <input type="button" value="Refresh List" id="refresh-audio-button" data-icon="refresh" />
+          </div>
+        </div>
+      </div>
+
+      
+      <div id="video" class="ui-content">
+        <!-- VIDEOS PANEL -->
+        <div data-role="collapsible" data-collapsed="false"  data-content-theme="a">
+          <h4>Videos</h4>
+          <div data-role="fieldcontain">
+            <input type="button" value="Capture Video" id="capture-video-button" data-icon="plus" />
+          </div>
+          <ul data-role="listview" id="videos" data-split-icon="delete" data-split-theme="a" data-inset="false">
+          </ul>
+          <div data-role="fieldcontain">
+            <input type="button" value="Refresh List" id="refresh-videos-button" data-icon="refresh" />
+          </div>
+        </div>
+      </div>
     </div>
-
-    <!-- VIDEOS PANEL -->
-    <div data-role="collapsible" data-collapsed="false" data-theme="e" data-content-theme="d">
-      <h4>Videos</h4>
-      <div data-role="fieldcontain">
-        <input type="button" value="Capture Video" id="capture-video-button" data-icon="plus" />
-      </div>
-      <ul data-role="listview" id="videos" data-split-icon="delete" data-split-theme="a" data-inset="false">
-      </ul>
-      <div data-role="fieldcontain">
-        <input type="button" value="Refresh List" id="refresh-videos-button" data-icon="refresh" />
-      </div>
-    </div>
-
-    <!-- AUDIO PANEL -->
-    <div data-role="collapsible" data-collapsed="false" data-theme="e" data-content-theme="d">
-      <h4>Audio Recordings</h4>
-      <div data-role="fieldcontain">
-        <input type="button" value="Capture Audio" id="capture-audio-button" data-icon="plus" />
-      </div>
-      <ul data-role="listview" id="audiofiles" data-split-icon="delete" data-split-theme="a" data-inset="false">
-      </ul>
-      <div data-role="fieldcontain">
-        <input type="button" value="Refresh List" id="refresh-audio-button" data-icon="refresh" />
-      </div>
-    </div>
-
   </div>
+ 
 
   <!-- SCRIPTS -->
   <script type="text/javascript">
@@ -113,10 +122,10 @@
     // EVENT LISTENERS
     // ---------------
     $("#create-button").bind("click", function (event, ui) {
-      app.loadExampleARchitectWorld(getSamplePath(0));
+      app.loadExampleARchitectWorld(getWorldPath(0));
     });
     $("#viewer-button").bind("click", function (event, ui) {
-      app.loadExampleARchitectWorld(getSamplePath(1));
+      app.loadExampleARchitectWorld(getWorldPath(1));
     });
 
     $("#capture-video-button").bind("click", function (event, ui) {

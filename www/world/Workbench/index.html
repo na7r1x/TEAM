@@ -92,11 +92,7 @@
     <div id="tracking-controls-container-lower-1">
       <!-- PLACEHOLDER FOR SECOND ROW OF BUTTON CONTROLS -->
         <div id="aug-color-container" class="table-container">
-            <!-- <label for="aug-text-color" class="table-cell">Text Colour:</label> -->
             <input id="aug-text-color" class="table-cell" name="aug-text-color" type="text" onchange="World.selectedFontColor(value)">
-        <!-- </div> -->
-        <!-- <div id="aug-background-color-container" class="table-container"> -->
-            <!-- <label for="aug-background-color" class="table-cell">Background Colour:</label> -->
             <input id="aug-background-color" class="table-cell" name="aug-background-color" type="text" onchange="World.selectedBackgroundColor(value)"
                 data-mini="true">
         </div>
@@ -118,20 +114,20 @@
 
     <!-- VIDEO SELECTION POPUP -->
     <div data-role="fieldcontain" style="display:none;">
-        <select name="select-video" id="selectVideo" data-native-menu="false" onchange="World.getVideo(value)">
-        </select>
-    
-        <!-- <a href="#dialogPage" data-rel="dialog" data-role="button" data-icon="search">Load Target</a> -->
-    
+        <div data-role="popup" id="popupMenuVideo" data-theme="b">
+            <ul data-role="listview" id="selectVideo" data-inset="true" style="min-width:210px;">
+                <li data-role="list-divider">Select a video</li> 
+            </ul>
+        </div>
     </div>
 
     <!-- AUDIO SELECTION POPUP -->
     <div data-role="fieldcontain" style="display:none;">
-        <select name="select-audio" id="selectAudio" data-native-menu="false" onchange="World.getAudioFile(value)">
-        </select>
-
-        <!-- <a href="#dialogPage" data-rel="dialog" data-role="button" data-icon="search">Load Target</a> -->
-
+        <div data-role="popup" id="popupMenuAudio" data-theme="b">
+            <ul data-role="listview" id="selectAudio" data-inset="true" style="min-width:210px;">
+                <li data-role="list-divider">Select an audio file</li>
+            </ul>
+        </div>
     </div>
 
 

@@ -1,21 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 var app = {
 
     // MAIN
@@ -46,24 +28,20 @@ var app = {
         app.wikitudePlugin.setJSONObjectReceivedCallback(app.onJSONObjectReceived);
     },
     // --- Wikitude Plugin ---
-    loadExampleARchitectWorld: function (example) {
+    loadExampleARchitectWorld: function (world) {
 
         app.isArchitectWorldLoaded = false;
-        // inject poi data using phonegap's GeoLocation API and inject data using World.loadPoisFromJsonData
-        if (example.requiredExtension === "ObtainPoiDataFromApplicationModel") {
-            prepareApplicationDataModel();
-        }
 
         /* cordova.file.applicationDirectory is used to demonstrate the use of the cordova file plugin in combination with the Wikitude plugin */
-        /* The length check here is only necessary because for each example the same 'example' object is given here and we only want to change the path once. */
-        if (example.path.length > cordova.file.applicationDirectory) {
-            if (example.path.substring(0, cordova.file.applicationDirectory) != cordova.file.applicationDirectory) {
-                example.path = cordova.file.applicationDirectory + example.path;
+        /* The length check here is only necessary because for each world the same 'world' object is given here and we only want to change the path once. */
+        if (world.path.length > cordova.file.applicationDirectory) {
+            if (world.path.substring(0, cordova.file.applicationDirectory) != cordova.file.applicationDirectory) {
+                world.path = cordova.file.applicationDirectory + world.path;
             }
         }
 
-        app.prepareArchitectWorld(example, function () {
-            app.loadARchitectWorld(example);
+        app.prepareArchitectWorld(world, function () {
+            app.loadARchitectWorld(world);
         });
     },
     loadCustomARchitectWorldFromURL: function (url) {
@@ -108,18 +86,14 @@ var app = {
     // Use this method to load a specific ARchitect World from either the local file system or a remote server
     loadARchitectWorld: function (architectWorld) {
         app.wikitudePlugin.loadARchitectWorld(function successFn(loadedURL) {
-                /* Respond to successful world loading if you need to */
-                app.isArchitectWorldLoaded = true;
+            /* Respond to successful world loading if you need to */
+            app.isArchitectWorldLoaded = true;
 
-                /* in case the loaded Architect World belongs to the 'obtain poi data from application model' example, we can now safely inject poi data. */
-                if (architectWorld.requiredExtension === "ObtainPoiDataFromApplicationModel") {
-                    injectGeneratedPoiJsonData();
-                }
-            }, function errorFn(error) {
-                app.isArchitectWorldLoaded = false;
-                alert('Loading AR web view failed: ' + error);
-            },
-            architectWorld.path, architectWorld.requiredFeatures, architectWorld.startupConfiguration
+        }, function errorFn(error) {
+            app.isArchitectWorldLoaded = false;
+            alert('Loading AR web view failed: ' + error);
+        },
+        architectWorld.path, architectWorld.requiredFeatures, architectWorld.startupConfiguration
         );
     },
 
@@ -130,7 +104,7 @@ var app = {
     // API TO NATIVE PLATFORM
     // ----------------------
 
-    // This function gets called if you call "AR.platform.sendJSONObject" in your ARchitect World
+    // This function gets called when "AR.platform.sendJSONObject" is called from an ARchitect World
     onJSONObjectReceived: function (jsonObject) {
         if (typeof jsonObject.action !== 'undefined') {
             if (jsonObject.action === "capture_screen") {
@@ -143,17 +117,14 @@ var app = {
                     },
                     true, null
                 );
-            } else if (jsonObject.action === "present_poi_details") {
-                var alertMessage = "Poi '" + jsonObject.id + "' selected\nTitle: " + jsonObject.title + "\nDescription: " + jsonObject.description;
-                alert(alertMessage);
             } else if (jsonObject.action === "get_video_absolute_path") {
-                var path = cordova.file.externalDataDirectory + "videos/" + jsonObject.name;
+                var path = cordova.file.dataDirectory + "videos/" + jsonObject.name;
                 app.wikitudePlugin.callJavaScript("World.addVideo('" + path + "', 0, 0);");
             } else if (jsonObject.action === "get_audio_absolute_path") {
-                var path = cordova.file.externalDataDirectory + "audio/" + jsonObject.name;
+                var path = cordova.file.dataDirectory + "audio/" + jsonObject.name;
                 app.wikitudePlugin.callJavaScript("World.addAudio('" + path + "', 0, 0);");
-            } else if (jsonObject.action === "save_current_instant_target") {
-                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (fileSystem) {
+            } else if (jsonObject.action === "save_current_instant_target") { // for testing purposes only
+                window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (fileSystem) {
                     fileSystem.getFile("SavedAugmentations.json", {
                         create: true,
                         exclusive: false
@@ -165,7 +136,7 @@ var app = {
                 }, app.saveError);
                 app.wikitudePlugin.callJavaScript("World.saveCurrentInstantTargetToUrl(\"" + cordova.file.dataDirectory + "SavedInstantTarget.wto" + "\");")
             } else if (jsonObject.action === "save_instant_target") {
-                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (fileSystem) {
+                window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (fileSystem) {
                     fileSystem.getDirectory('augmentations/', {
                         create: true,
                         exclusive: false
@@ -179,10 +150,16 @@ var app = {
                             }, app.saveError);
                         }, app.saveError);
                     }, app.saveError);
+                    fileSystem.getDirectory('targets/', {
+                        create: true,
+                        exclusive: false
+                    }, function (dirEntry) {
+                        console.log(dirEntry);
+                    }, app.saveError);
                 }, app.saveError);
-                app.wikitudePlugin.callJavaScript("World.saveCurrentInstantTargetToUrl(\"" + cordova.file.externalDataDirectory + 'targets/' + jsonObject.name + ".wto" + "\");")
-            } else if (jsonObject.action === "load_existing_instant_target") {
-                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (fileSystem) {
+                app.wikitudePlugin.callJavaScript("World.saveCurrentInstantTargetToUrl(\"" + cordova.file.dataDirectory + 'targets/' + jsonObject.name + ".wto" + "\");")
+            } else if (jsonObject.action === "load_existing_instant_target") { // for testing purposes only
+                window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (fileSystem) {
                     fileSystem.getFile("SavedAugmentations.json", null, function (fileEntry) {
                         fileEntry.file(function (file) {
                             var reader = new FileReader();
@@ -195,13 +172,13 @@ var app = {
                     }, app.loadError);
                 }, app.loadError);
             } else if (jsonObject.action === "load_instant_target") {
-                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + 'augmentations/', function (fileSystem) {
+                window.resolveLocalFileSystemURL(cordova.file.dataDirectory + 'augmentations/', function (fileSystem) {
                     fileSystem.getFile(jsonObject.name + ".json", null, function (fileEntry) {
                         fileEntry.file(function (file) {
                             var reader = new FileReader();
                             reader.onloadend = function (evt) {
                                 var augmentations = evt.target.result;
-                                app.wikitudePlugin.callJavaScript("World.loadExistingInstantTargetFromUrl(\"" + cordova.file.externalDataDirectory + 'targets/' + jsonObject.name + ".wto" + "\"," + augmentations + ");");
+                                app.wikitudePlugin.callJavaScript("World.loadExistingInstantTargetFromUrl(\"" + cordova.file.dataDirectory + 'targets/' + jsonObject.name + ".wto" + "\"," + augmentations + ");");
                             };
                             reader.readAsText(file);
                         }, app.loadError);
@@ -210,10 +187,10 @@ var app = {
             } else if (jsonObject.action === "delete_instant_target") {
                 app.deleteTracker(jsonObject.name);
             } else if (jsonObject.action === "get_video_absolute_path") {
-                app.wikitudePlugin.callJavaScript("World.addVideo(" + cordova.file.externalDataDirectory + "videos/" + jsonObject.name + ");");
+                app.wikitudePlugin.callJavaScript("World.addVideo(" + cordova.file.dataDirectory + "videos/" + jsonObject.name + ");");
             } else if (jsonObject.action === "get_saved_models") {
                 // alert('received json')
-                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (fileSystem) {
+                window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (fileSystem) {
                     // var directoryEntry = fileSystem;
                     // directoryEntry.getDirectory("targets", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
                     fileSystem.getDirectory('targets', {
@@ -233,10 +210,7 @@ var app = {
                     }, app.loadError);
                 }, app.loadError);
             } else if (jsonObject.action === "get_saved_videos") {
-                // alert('received json')
-                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (fileSystem) {
-                    // var directoryEntry = fileSystem;
-                    // directoryEntry.getDirectory("targets", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
+                window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (fileSystem) {
                     fileSystem.getDirectory('videos', {
                         create: true,
                         exclusive: false
@@ -246,7 +220,6 @@ var app = {
                             if (videos.length == 0)
                                 alert("No videos.");
                             else {
-                                // alert(videos);
                                 console.log(videos);
                                 app.wikitudePlugin.callJavaScript("World.getVideos(" + JSON.stringify(videos) + ");");
                             }
@@ -255,7 +228,7 @@ var app = {
                 }, app.loadError);
             } else if (jsonObject.action === "get_saved_audioFiles") {
                 // alert('received json')
-                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (fileSystem) {
+                window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (fileSystem) {
                     // var directoryEntry = fileSystem;
                     // directoryEntry.getDirectory("targets", {create: true, exclusive: false}, onDirectorySuccess, onDirectoryFail);
                     fileSystem.getDirectory('audio', {
@@ -331,14 +304,14 @@ var app = {
     deleteTracker: function (tracker) {
         tracker = tracker.split('.')[0];
         if (confirm('Delete [' + tracker + ']. Are you sure?')) {
-            window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + 'targets/', function (fileSystem) {
+            window.resolveLocalFileSystemURL(cordova.file.dataDirectory + 'targets/', function (fileSystem) {
                 fileSystem.getFile(tracker + '.wto', null, function (fileEntry) {
                     fileEntry.remove(function (file) {
                         alert("WTO file removed successfully!");
                     }, app.deleteError);
                 }, app.deleteError);
             }, app.deleteError);
-            window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + 'augmentations/', function (fileSystem) {
+            window.resolveLocalFileSystemURL(cordova.file.dataDirectory + 'augmentations/', function (fileSystem) {
                 fileSystem.getFile(tracker + '.json', null, function (fileEntry) {
                     fileEntry.remove(function (file) {
                         alert("Augmentations file removed successfully!");
@@ -350,7 +323,7 @@ var app = {
 
     deleteVideo: function (video) {
         if (confirm('Delete [' + video + ']. Are you sure?')) {
-            window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + 'videos/', function (fileSystem) {
+            window.resolveLocalFileSystemURL(cordova.file.dataDirectory + 'videos/', function (fileSystem) {
                 fileSystem.getFile(video, null, function (fileEntry) {
                     fileEntry.remove(function (file) {
                         alert("Video file removed successfully!");
@@ -362,7 +335,7 @@ var app = {
 
     deleteAudioFile: function (audio) {
         if (confirm('Delete [' + audio + ']. Are you sure?')) {
-            window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory + 'audio/', function (fileSystem) {
+            window.resolveLocalFileSystemURL(cordova.file.dataDirectory + 'audio/', function (fileSystem) {
                 fileSystem.getFile(audio, null, function (fileEntry) {
                     fileEntry.remove(function (file) {
                         alert("audio file removed successfully!");
@@ -422,7 +395,7 @@ var app = {
             alert(evt.target.error.code);
         }
 
-        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, onFileSystemSuccess, onFileSystemFail);
+        window.resolveLocalFileSystemURL(cordova.file.dataDirectory, onFileSystemSuccess, onFileSystemFail);
     },
 
 
@@ -470,7 +443,7 @@ var app = {
             alert(evt.target.error.code);
         }
 
-        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, onFileSystemSuccess, onFileSystemFail);
+        window.resolveLocalFileSystemURL(cordova.file.dataDirectory, onFileSystemSuccess, onFileSystemFail);
     },
 
 
@@ -517,7 +490,7 @@ var app = {
             alert(evt.target.error.code);
         }
 
-        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, onFileSystemSuccess, onFileSystemFail);
+        window.resolveLocalFileSystemURL(cordova.file.dataDirectory, onFileSystemSuccess, onFileSystemFail);
     },
 
 
@@ -539,7 +512,7 @@ var app = {
             window.resolveLocalFileSystemURL(
                 fileUri,
                 function (fileEntry) {
-                    var newFileUri = cordova.file.externalDataDirectory;
+                    var newFileUri = cordova.file.dataDirectory;
                     var oldFileUri = fileUri;
                     var fileExt = "." + oldFileUri.split('.').pop();
                     var ts = Math.round((new Date()).getTime() / 1000);
@@ -553,18 +526,21 @@ var app = {
                                         exclusive: false
                                     },
                                     function (dirEntry) {
-                                        fileEntry.moveTo(dirEntry, newFileName, successCallback, errorCallback('failed to move file'));
+                                        fileEntry.moveTo(dirEntry, newFileName, successCallback, errorCallback);
                                     },
-                                    errorCallback('failed getting dir videos')
+                                    errorCallback
+                                    // errorCallback('failed getting dir videos')
                                 );
                             },
-                            errorCallback('new path resolve failed')
+                            errorCallback
+                            // errorCallback('new path resolve failed')
                         );
                     } else {
                         errorCallback('undefined file name');
                     }
                 },
-                errorCallback('filesystem resolve failed')
+                errorCallback
+                // errorCallback('filesystem resolve failed')
             );
         }
 
@@ -592,7 +568,7 @@ var app = {
     },
 
     playVideo: function playVideoFn(videoname) {
-        var path = cordova.file.externalDataDirectory + "videos/" + videoname;
+        var path = cordova.file.dataDirectory + "videos/" + videoname;
         var options = {
             successCallback: function () {
                 console.log("Video was closed without error.");
@@ -623,7 +599,7 @@ var app = {
                 window.resolveLocalFileSystemURL(
                     fileUri,
                     function (fileEntry) {
-                        var newFileUri = cordova.file.externalDataDirectory;
+                        var newFileUri = cordova.file.dataDirectory;
                         var oldFileUri = fileUri;
                         var fileExt = "." + oldFileUri.split('.')[oldFileUri.split('.').length-1];
                         var ts = Math.round((new Date()).getTime() / 1000);
@@ -669,7 +645,7 @@ var app = {
         },
 
         playAudio: function playVideoFn(videoname) {
-            var path = cordova.file.externalDataDirectory + "audio/" + videoname;
+            var path = cordova.file.dataDirectory + "audio/" + videoname;
             var options = {
                 successCallback: function () {
                     console.log("Audio was closed without error.");

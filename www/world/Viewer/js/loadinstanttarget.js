@@ -111,7 +111,7 @@ var World = {
                 } else if (model.type === 'link') {
                     model.link.height = 0.1;
                     console.log(model);
-                    newDrawable = new AR.Label(model.link.text, model.link.height, model.link);
+                    var newDrawable = new AR.Label(model.link.text, model.link.height, model.link);
                     newDrawable.onClick = function () {
                         AR.context.openInBrowser(model.url);
                     };
@@ -119,7 +119,7 @@ var World = {
                 } else if (model.type === 'video') {
                     model.video.height = 1;
                     console.log(model);
-                    newDrawable = new AR.VideoDrawable(model.uri, model.video.height, model.video);
+                    var newDrawable = new AR.VideoDrawable(model.uri, model.video.height, model.video);
                     newDrawable.onClick = function () {
                         newDrawable.play();
                     };
@@ -127,7 +127,7 @@ var World = {
                 } else if (model.type === 'html') {
                     model.object.height = 1;
                     console.log(model);
-                    newDrawable = new AR.HtmlDrawable({html:model.html}, model.object.height, model.object);
+                    var newDrawable = new AR.HtmlDrawable({html:model.html}, model.object.height, model.object);
                     newDrawable.clickThroughEnabled = true;
                     newDrawable.onClick = function () {
                         console.log(newDrawable);
